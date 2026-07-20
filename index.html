@@ -278,38 +278,67 @@
 
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 8px;
+            margin-bottom: 15px;
         }
 
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 15px;
+            padding: 8px 10px;
             text-align: center;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         .card .title {
-            font-size: 0.8rem;
+            font-size: 0.65rem;
             color: var(--text-muted);
             text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             font-weight: 600;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
         .card .value {
-            font-size: 1.6rem;
+            font-size: 1.1rem;
             font-weight: bold;
         }
 
         .card.entries .value { color: var(--text-main); }
         .card.charge .value { color: var(--accent-blue); }
         .card.expense .value { color: var(--accent-red); }
+        .card.pending .value { color: var(--accent-gold); }
         .card.profit .value { color: var(--accent-green); }
+
+        .day-total-section, .month-total-section {
+            margin-bottom: 15px;
+        }
+        .day-total-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .day-total-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .btn-toggle-day {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .btn-toggle-day:hover {
+            color: var(--text-main);
+            border-color: var(--accent-blue);
+        }
 
         .controls-wrapper {
             background-color: var(--card-bg);
@@ -1054,6 +1083,27 @@
                 </div>
                 <div class="date-indicator-badge hide-in-entry-mode" id="current-date-badge">Showing: Today</div>
             </div>
+
+            <div class="date-picker-panel hide-in-entry-mode">
+                <div class="panel-group">
+                    <label for="dashboard-month-select">📊 Report Month:</label>
+                    <select id="dashboard-month-select" onchange="renderTargetWorkspace()">
+                        <option value="auto">Auto (Selected Date)</option>
+                        <option value="0">January</option>
+                        <option value="1">February</option>
+                        <option value="2">March</option>
+                        <option value="3">April</option>
+                        <option value="4">May</option>
+                        <option value="5">June</option>
+                        <option value="6">July</option>
+                        <option value="7">August</option>
+                        <option value="8">September</option>
+                        <option value="9">October</option>
+                        <option value="10">November</option>
+                        <option value="11">December</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <div class="customer-summary-panel hide-in-entry-mode" id="cust-profile-panel">
@@ -1078,22 +1128,61 @@
             </div>
         </div>
 
-        <div class="dashboard hide-in-entry-mode">
-            <div class="card entries">
-                <div class="title" id="card-title-entries">Selected Operations</div>
-                <div class="value" id="day-stat-entries">0 Items</div>
+        <div class="month-total-section hide-in-entry-mode">
+            <div class="day-total-header">
+                <span class="day-total-title" id="month-total-title">📊 Month Total</span>
+                <button class="btn-toggle-day" id="month-total-toggle-btn" onclick="toggleMonthTotalVisibility()">🙈 Hide</button>
             </div>
-            <div class="card charge">
-                <div class="title" id="card-title-charge">Total Gross Charges</div>
-                <div class="value" id="day-stat-charge">₹0</div>
+            <div class="dashboard" id="month-total-cards">
+                <div class="card entries">
+                    <div class="title" id="card-title-entries">Selected Operations</div>
+                    <div class="value" id="day-stat-entries">0 Items</div>
+                </div>
+                <div class="card charge">
+                    <div class="title" id="card-title-charge">Total Gross Charges</div>
+                    <div class="value" id="day-stat-charge">₹0</div>
+                </div>
+                <div class="card expense">
+                    <div class="title" id="card-title-expense">Total Expenses</div>
+                    <div class="value" id="day-stat-expense">₹0</div>
+                </div>
+                <div class="card pending">
+                    <div class="title" id="card-title-pending">Pending Amount</div>
+                    <div class="value" id="day-stat-pending">₹0</div>
+                </div>
+                <div class="card profit">
+                    <div class="title" id="card-title-profit">Net Total Profit</div>
+                    <div class="value" id="day-stat-profit">₹0</div>
+                </div>
             </div>
-            <div class="card expense">
-                <div class="title" id="card-title-expense">Total Expenses</div>
-                <div class="value" id="day-stat-expense">₹0</div>
+        </div>
+
+        <div class="day-total-section hide-in-entry-mode" id="day-total-section">
+            <div class="day-total-header">
+                <span class="day-total-title">📅 Day Total — <span id="day-mini-label">Today</span></span>
+                <button class="btn-toggle-day" id="day-total-toggle-btn" onclick="toggleDayTotalVisibility()">🙈 Hide</button>
             </div>
-            <div class="card profit">
-                <div class="title" id="card-title-profit">Net Total Profit</div>
-                <div class="value" id="day-stat-profit">₹0</div>
+            <div class="dashboard" id="day-total-cards">
+                <div class="card entries">
+                    <div class="title">Items</div>
+                    <div class="value" id="day-mini-entries">0 Items</div>
+                </div>
+                <div class="card charge">
+                    <div class="title">Charged</div>
+                    <div class="value" id="day-mini-charge">₹0</div>
+                </div>
+                <div class="card expense">
+                    <div class="title">Expenses</div>
+                    <div class="value" id="day-mini-expense">₹0</div>
+                </div>
+                <div class="card pending">
+                    <div class="title">Pending</div>
+                    <div class="value" id="day-mini-pending">₹0</div>
+                </div>
+                <div class="card profit">
+                    <div class="title">Profit</div>
+                    <div class="value" id="day-mini-profit">₹0</div>
+                </div>
             </div>
         </div>
 
@@ -2544,6 +2633,24 @@
         }
     }
 
+    function toggleMonthTotalVisibility() {
+        const cards = document.getElementById('month-total-cards');
+        const btn = document.getElementById('month-total-toggle-btn');
+        if (!cards || !btn) return;
+        const isHidden = cards.style.display === 'none';
+        cards.style.display = isHidden ? 'grid' : 'none';
+        btn.innerText = isHidden ? '🙈 Hide' : '👁️ Show';
+    }
+
+    function toggleDayTotalVisibility() {
+        const cards = document.getElementById('day-total-cards');
+        const btn = document.getElementById('day-total-toggle-btn');
+        if (!cards || !btn) return;
+        const isHidden = cards.style.display === 'none';
+        cards.style.display = isHidden ? 'grid' : 'none';
+        btn.innerText = isHidden ? '🙈 Hide' : '👁️ Show';
+    }
+
     function renderTargetWorkspace() {
         const searchQuery = document.getElementById('customer-search-input').value.trim().toLowerCase();
         const selectedISO = document.getElementById('target-date-input').value;
@@ -2555,23 +2662,29 @@
         let totalJobsCount = 0;
         let runningChargeSum = 0;
         let runningExpenseSum = 0;
+        let runningPendingSum = 0;
         let runningProfitSum = 0;
         
         let filteredRecords = [];
 
         let totalLifetimeJobs = 0;
         let totalLifetimePaid = 0;
+        let totalLifetimeExpense = 0;
         let totalLifetimePending = 0;
         let totalLifetimeNetValue = 0;
         let currentClientOfficialName = "";
+
+        const dayMiniStrip = document.getElementById('day-total-section');
 
         if (searchQuery.length > 0) {
             document.getElementById('registry-table-title').innerText = `🔍 Customer History Registry: "${document.getElementById('customer-search-input').value}"`;
             document.getElementById('card-title-entries').innerText = "Total Customer Jobs";
             document.getElementById('card-title-charge').innerText = "Customer Total Paid";
-            document.getElementById('card-title-expense').innerText = "Customer Total Pending";
+            document.getElementById('card-title-expense').innerText = "Customer Total Expenses";
+            document.getElementById('card-title-pending').innerText = "Customer Total Pending";
             document.getElementById('card-title-profit').innerText = "Customer Net Value";
-            
+            if (dayMiniStrip) dayMiniStrip.style.display = "none";
+
             repairRecords.forEach(item => {
                 if (item.name.toLowerCase() === searchQuery) {
                     filteredRecords.push(item);
@@ -2583,11 +2696,12 @@
                     } else {
                         if (item.partialPaidAmt > 0) {
                             runningChargeSum += item.partialPaidAmt;
-                            runningExpenseSum += item.charge; 
+                            runningPendingSum += item.charge;
                         } else {
-                            runningExpenseSum += fullVal;
+                            runningPendingSum += fullVal;
                         }
                     }
+                    runningExpenseSum += item.expense;
                     runningProfitSum += (fullVal - item.expense);
                 }
             });
@@ -2608,6 +2722,7 @@
                             totalLifetimePending += fullCost;
                         }
                     }
+                    totalLifetimeExpense += item.expense;
                     totalLifetimeNetValue += (fullCost - item.expense);
                 }
             });
@@ -2625,29 +2740,75 @@
 
         } else {
             document.getElementById('cust-profile-panel').style.display = "none";
+            if (dayMiniStrip) dayMiniStrip.style.display = "block";
 
             document.getElementById('registry-table-title').innerText = `📋 Operation Log Registry (${displaySelectedDate})`;
-            document.getElementById('card-title-entries').innerText = "Selected Day Work Done";
-            document.getElementById('card-title-charge').innerText = "Selected Day Charges";
-            document.getElementById('card-title-expense').innerText = "Selected Day Expenses";
-            document.getElementById('card-title-profit').innerText = "Selected Day Net Profit";
 
+            // Table below still lists only the selected day's entries,
+            // and the compact strip under the cards totals just that day (incl. pending).
+            let dayEntries = 0, dayCharge = 0, dayExpense = 0, dayPending = 0, dayProfit = 0;
             repairRecords.forEach(item => {
                 let itemISO = item.isoDateStr || parseDateStringToISO(item.date);
                 if (itemISO === selectedISO) {
                     filteredRecords.push(item);
+                    dayEntries++;
+                    const fullVal = item.originalCharge || item.charge;
+                    if (item.partialPaidAmt > 0) {
+                        dayCharge += item.partialPaidAmt;
+                    } else {
+                        dayCharge += item.charge;
+                    }
+                    dayExpense += item.expense;
+                    if (item.status !== 'PAID') dayPending += item.charge;
+                    dayProfit += (item.partialPaidAmt > 0 ? item.partialPaidAmt : item.charge) - item.expense;
+                }
+            });
+            document.getElementById('day-mini-label').innerText = displaySelectedDate;
+            document.getElementById('day-mini-entries').innerText = dayEntries + (dayEntries === 1 ? " Item" : " Items");
+            document.getElementById('day-mini-charge').innerText = '₹' + dayCharge.toLocaleString('en-IN');
+            document.getElementById('day-mini-expense').innerText = '₹' + dayExpense.toLocaleString('en-IN');
+            document.getElementById('day-mini-pending').innerText = '₹' + dayPending.toLocaleString('en-IN');
+            document.getElementById('day-mini-profit').innerText = '₹' + dayProfit.toLocaleString('en-IN');
+
+            // Top summary cards show a MONTH's totals — either auto (the selected date's
+            // month, so it rolls over automatically) or a month manually chosen from the
+            // "Report Month" dropdown.
+            const monthSelectEl = document.getElementById('dashboard-month-select');
+            const monthSelectVal = monthSelectEl ? monthSelectEl.value : 'auto';
+            let effectiveMonthIdx, monthLabel;
+            if (monthSelectVal === 'auto') {
+                effectiveMonthIdx = parseInt(selectedISO.split('-')[1], 10) - 1;
+                monthLabel = new Date(selectedISO + 'T00:00:00').toLocaleString('en-IN', { month: 'long', year: 'numeric' });
+            } else {
+                effectiveMonthIdx = parseInt(monthSelectVal, 10);
+                monthLabel = monthNamesArr[effectiveMonthIdx];
+            }
+
+            document.getElementById('card-title-entries').innerText = `${monthLabel} Work Done`;
+            document.getElementById('card-title-charge').innerText = `${monthLabel} Total Charges`;
+            document.getElementById('card-title-expense').innerText = `${monthLabel} Total Expenses`;
+            document.getElementById('card-title-pending').innerText = `${monthLabel} Pending`;
+            document.getElementById('card-title-profit').innerText = `${monthLabel} Net Profit`;
+
+            repairRecords.forEach(item => {
+                let mIndex = item.rawMonth;
+                if (mIndex === undefined) {
+                    let itemISO = item.isoDateStr || parseDateStringToISO(item.date);
+                    if (itemISO) mIndex = parseInt(itemISO.split('-')[1], 10) - 1;
+                }
+                if (mIndex === effectiveMonthIdx) {
                     totalJobsCount++;
-                    
+
                     const fullVal = item.originalCharge || item.charge;
                     if(item.partialPaidAmt > 0) {
                         runningChargeSum += item.partialPaidAmt; 
-                        runningExpenseSum += item.expense;
                         runningProfitSum += (item.partialPaidAmt - item.expense);
                     } else {
                         runningChargeSum += item.charge;
-                        runningExpenseSum += item.expense;
                         runningProfitSum += (item.charge - item.expense);
                     }
+                    runningExpenseSum += item.expense;
+                    if (item.status !== 'PAID') runningPendingSum += item.charge;
                 }
             });
         }
@@ -2693,6 +2854,7 @@
         document.getElementById('day-stat-entries').innerText = totalJobsCount + (totalJobsCount === 1 ? " Item" : " Items");
         document.getElementById('day-stat-charge').innerText = '₹' + runningChargeSum.toLocaleString('en-IN');
         document.getElementById('day-stat-expense').innerText = '₹' + runningExpenseSum.toLocaleString('en-IN');
+        document.getElementById('day-stat-pending').innerText = '₹' + runningPendingSum.toLocaleString('en-IN');
         document.getElementById('day-stat-profit').innerText = '₹' + runningProfitSum.toLocaleString('en-IN');
 
         document.getElementById('no-data-msg').style.display = (filteredRecords.length === 0) ? 'block' : 'none';
