@@ -1,0 +1,3078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automation Work Hub</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-red: #f87171;
+            --accent-gold: #fbbf24;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --tab-active: #0284c7;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .backup-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-backup {
+            background-color: #475569;
+            color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-backup:hover {
+            background-color: #64748b;
+        }
+
+        #import-file { display: none; }
+
+        body.entry-only-mode .hide-in-entry-mode {
+            display: none !important;
+        }
+
+        .show-in-entry-mode {
+            display: none;
+        }
+
+        body.entry-only-mode .show-in-entry-mode {
+            display: block;
+        }
+
+        .mode-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-lock-mode {
+            background-color: #475569;
+            color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-lock-mode:hover {
+            background-color: #64748b;
+        }
+
+        body.entry-only-mode .btn-lock-mode {
+            background-color: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        .entry-mode-banner {
+            display: none;
+            background: rgba(248, 113, 113, 0.12);
+            border: 2px dashed var(--accent-red);
+            color: var(--accent-red);
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        body.entry-only-mode .entry-mode-banner {
+            display: block;
+        }
+
+        .tabs-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--text-muted);
+        }
+
+        .tab-btn.active {
+            background-color: var(--tab-active);
+            color: #fff;
+            border-color: var(--tab-active);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .control-panel-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .control-panel-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .search-filter-panel, .date-picker-panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .panel-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-grow: 1;
+        }
+
+        .panel-group label {
+            font-weight: bold;
+            color: var(--accent-blue);
+            white-space: nowrap;
+        }
+
+        .panel-group input {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 1rem;
+            outline: none;
+            width: 100%;
+        }
+
+        .btn-share-text {
+            background-color: var(--accent-gold);
+            color: #000;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            transition: transform 0.1s ease;
+        }
+
+        .btn-share-text:active {
+            transform: scale(0.95);
+        }
+
+        .date-indicator-badge {
+            background-color: rgba(56, 189, 248, 0.1);
+            border: 1px solid var(--accent-blue);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+            white-space: nowrap;
+        }
+
+        .customer-summary-panel {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 2px dashed var(--accent-blue);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .customer-summary-title {
+            font-weight: bold;
+            color: var(--accent-blue);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .customer-summary-metrics {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .metric-block span {
+            display: block;
+        }
+        .metric-block .m-lbl {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        .metric-block .m-val {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card .title {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .card .value {
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+
+        .card.entries .value { color: var(--text-main); }
+        .card.charge .value { color: var(--accent-blue); }
+        .card.expense .value { color: var(--accent-red); }
+        .card.profit .value { color: var(--accent-green); }
+
+        .controls-wrapper {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .presets-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .preset-lbl {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            align-self: center;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .btn-preset {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-blue);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-preset:hover {
+            background-color: var(--accent-blue);
+            color: #000;
+        }
+        .btn-add-custom {
+            background-color: rgba(74, 222, 128, 0.15);
+            color: var(--accent-green);
+            border: 1px dashed var(--accent-green);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-add-custom:hover {
+            background-color: var(--accent-green);
+            color: #000;
+        }
+
+        .cust-presets-wrapper {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+        .btn-cust-preset {
+            background-color: #334155;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-cust-preset:hover {
+            background-color: #475569;
+            border-color: var(--text-muted);
+        }
+        .btn-add-cust-preset {
+            background: none;
+            color: var(--accent-gold);
+            border: 1px dashed var(--accent-gold);
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .input-group input, .input-group select {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .btn-submit {
+            background-color: var(--accent-blue);
+            color: #000;
+            font-weight: bold;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            align-self: flex-end;
+            height: 41px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--text-main);
+            margin: 10px 0 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .monthly-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .month-row {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 14px;
+            position: relative;
+        }
+
+        .month-row.top-performing {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.15);
+        }
+
+        .month-row.top-performing::after {
+            content: "⭐ TOP PROFIT";
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            background: var(--accent-gold);
+            color: #000;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .month-name {
+            font-weight: bold;
+            color: var(--accent-blue);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .month-stat {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .month-stat span:last-child {
+            font-weight: 600;
+        }
+
+        .tool-inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .tool-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 14px;
+            position: relative;
+        }
+
+        .tool-card.low-credit {
+            border-color: var(--accent-red);
+            box-shadow: 0 0 10px rgba(248, 113, 113, 0.15);
+        }
+
+        .tool-card-name {
+            font-weight: bold;
+            color: var(--accent-blue);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .tool-card-balance {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .tool-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tool-card-actions button {
+            flex: 1;
+            padding: 6px 8px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            background-color: #475569;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .tool-card-actions button:hover {
+            background-color: #64748b;
+        }
+
+        .add-tool-form {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: flex-end;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .add-tool-form .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .add-tool-form label {
+            font-weight: bold;
+            color: var(--accent-blue);
+            font-size: 0.85rem;
+        }
+
+        .add-tool-form input {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-box {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 22px;
+            width: 380px;
+            max-width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .modal-title {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+            margin-bottom: 4px;
+        }
+
+        .modal-sub {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+
+        .tool-modal-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .tool-modal-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .tool-modal-item:hover {
+            border-color: var(--text-muted);
+        }
+
+        .tool-modal-item.selected {
+            border-color: var(--accent-blue);
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .tool-modal-item-info {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .tool-modal-item-name {
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .tool-modal-item-balance {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .tool-modal-topup-btn {
+            background-color: #475569;
+            color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 5px 9px;
+            border-radius: 5px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .tool-modal-topup-btn:hover {
+            background-color: #64748b;
+        }
+
+        .tool-modal-topup-inline {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .tool-modal-topup-inline input {
+            width: 70px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 5px 8px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-modal-skip {
+            background-color: #475569;
+            color: #fff;
+        }
+
+        .btn-modal-skip:hover {
+            background-color: #64748b;
+        }
+
+        .btn-modal-confirm {
+            background-color: var(--tab-active);
+            color: #fff;
+        }
+
+        .btn-modal-confirm:hover {
+            background-color: #0369a1;
+        }
+
+        /* ---------- Custom Dialog System (replaces native alert/confirm/prompt) ---------- */
+        .custom-dialog-message {
+            color: var(--text-main);
+            font-size: 0.92rem;
+            line-height: 1.55;
+            white-space: pre-wrap;
+            margin-bottom: 4px;
+        }
+
+        .custom-dialog-input-wrap {
+            margin-top: 16px;
+        }
+
+        .custom-dialog-input {
+            width: 100%;
+            box-sizing: border-box;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .custom-dialog-input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .custom-dialog-choice-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 14px;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .custom-dialog-choice-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 11px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-sizing: border-box;
+            transition: all 0.15s;
+        }
+
+        .custom-dialog-choice-btn:hover {
+            border-color: var(--accent-blue);
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-blue);
+        }
+
+        .btn-modal-danger {
+            background-color: var(--accent-red) !important;
+        }
+
+        .btn-modal-danger:hover {
+            background-color: #ef4444 !important;
+        }
+
+        #custom-dialog-overlay .modal-box {
+            width: 420px;
+        }
+
+        /* ---------- Cloud Sync ---------- */
+        #cloud-sync-btn.sync-connected {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .sync-form-group {
+            margin-bottom: 14px;
+        }
+
+        .sync-form-group label {
+            display: block;
+            font-weight: bold;
+            color: var(--accent-blue);
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        .sync-form-group .sync-hint {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            margin-top: 4px;
+            font-weight: normal;
+        }
+
+        .sync-form-group input {
+            width: 100%;
+            box-sizing: border-box;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 9px 11px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .sync-form-group input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .sync-checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+        }
+
+        .sync-checkbox-row input {
+            width: auto;
+        }
+
+        .sync-status-box {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            min-height: 20px;
+        }
+
+        .sync-actions-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .sync-actions-row button {
+            flex: 1;
+            padding: 9px;
+            border-radius: 6px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.82rem;
+        }
+
+        .btn-sync-push { background-color: var(--tab-active); color: #fff; }
+        .btn-sync-push:hover { background-color: #0369a1; }
+        .btn-sync-pull { background-color: #475569; color: #fff; }
+        .btn-sync-pull:hover { background-color: #64748b; }
+        .btn-sync-save { background-color: var(--accent-green); color: #0f172a; }
+        .btn-sync-save:hover { opacity: 0.85; }
+        .btn-sync-disconnect { background-color: transparent; color: var(--accent-red); border: 1px solid var(--accent-red) !important; }
+        .btn-sync-disconnect:hover { background-color: rgba(248, 113, 113, 0.1); }
+
+        .margin-progress-container {
+            margin-top: 8px;
+            background-color: var(--bg-color);
+            border-radius: 4px;
+            height: 6px;
+            overflow: hidden;
+        }
+        .margin-progress-bar {
+            background-color: var(--accent-green);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .table-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge.paid { background-color: rgba(74, 222, 128, 0.2); color: var(--accent-green); }
+        .badge.pending { background-color: rgba(251, 191, 36, 0.2); color: var(--accent-gold); }
+
+        .btn-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .btn-inline-partial {
+            background-color: rgba(251, 191, 36, 0.15);
+            color: var(--accent-gold);
+            border: 1px solid var(--accent-gold);
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 6px;
+            transition: all 0.1s;
+        }
+
+        .btn-inline-partial:hover {
+            background-color: var(--accent-gold);
+            color: #000;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .top-month-banner {
+            background: linear-gradient(90deg, #1e1b4b 0%, #311042 100%);
+            border: 1px solid #4338ca;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .top-month-banner span {
+            color: var(--accent-gold);
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>Automation Work Hub</h1>
+            <p style="margin:5px 0 0 0; color:var(--text-muted);">Unified Multi-Tab Work Desk & Operations Ledger</p>
+        </div>
+        <div class="backup-controls hide-in-entry-mode">
+            <button class="btn-backup" onclick="exportDataJSON()">📤 Export JSON</button>
+            <button class="btn-backup" onclick="document.getElementById('import-file').click()">📥 Import JSON</button>
+            <input type="file" id="import-file" accept=".json" onchange="importDataJSON(event)">
+            <button class="btn-backup" id="cloud-sync-btn" onclick="openSyncModal()">☁️ Cloud Sync</button>
+        </div>
+        <div class="mode-controls hide-in-entry-mode">
+            <button class="btn-lock-mode" onclick="manageStaffAndPins()" style="margin-right:8px;">👥 Manage Staff & PINs</button>
+        </div>
+        <div class="mode-controls">
+            <button class="btn-lock-mode" id="entry-mode-toggle-btn" onclick="toggleEntryOnlyMode()">🔒 Staff Entry Mode</button>
+        </div>
+    </header>
+
+    <div class="entry-mode-banner"><span id="entry-mode-banner-text">🔒 STAFF ENTRY MODE — Only new job entry is available. Ask the owner to unlock for full access.</span></div>
+
+    <div class="tabs-nav hide-in-entry-mode">
+        <button class="tab-btn active" onclick="switchTab('entry-tab', this)">🛠️ New Operations Desk</button>
+        <button class="tab-btn" onclick="switchTab('report-tab', this); calculateMonthlyReports();">📈 Monthly Business Report</button>
+        <button class="tab-btn" onclick="switchTab('customers-tab', this); renderTopCustomers();">🏆 Top Customers</button>
+        <button class="tab-btn" onclick="switchTab('inventory-tab', this); renderToolInventory(); renderLinkedServices(); populateLinkedServiceSuggestions();">🧰 Tool Inventory</button>
+    </div>
+
+    <!-- TAB 1: DATA ENTRY -->
+    <div id="entry-tab" class="tab-content active">
+        
+        <div class="control-panel-grid">
+            <div class="search-filter-panel hide-in-entry-mode">
+                <div class="panel-group">
+                    <label for="customer-search-input">🔍 Find Customer:</label>
+                    <input type="text" id="customer-search-input" placeholder="Type customer name to filter..." oninput="renderTargetWorkspace()">
+                </div>
+                <button class="btn-share-text" id="share-text-btn" onclick="copyPendingJobsToClipboard()">📋 Copy Reminder Text</button>
+                <button class="btn-share-text" id="pending-receipt-btn" onclick="printPendingReceipt()" style="background-color:#475569; color:#fff;">🖨️ Pending Receipt</button>
+            </div>
+
+            <div class="date-picker-panel">
+                <div class="panel-group">
+                    <label for="target-date-input">📅 Management Date:</label>
+                    <input type="date" id="target-date-input" onchange="handleDateChange()">
+                </div>
+                <div class="date-indicator-badge hide-in-entry-mode" id="current-date-badge">Showing: Today</div>
+            </div>
+        </div>
+
+        <div class="customer-summary-panel hide-in-entry-mode" id="cust-profile-panel">
+            <div class="customer-summary-title" id="cust-profile-title">Customer History Profile</div>
+            <div class="customer-summary-metrics">
+                <div class="metric-block">
+                    <span class="m-lbl">Total Work Logs</span>
+                    <span class="m-val" id="cust-lbl-count" style="color: var(--text-main);">0 Items</span>
+                </div>
+                <div class="metric-block">
+                    <span class="m-lbl">Lifetime Cash Settled</span>
+                    <span class="m-val" id="cust-lbl-paid" style="color: var(--accent-green);">₹0</span>
+                </div>
+                <div class="metric-block">
+                    <span class="m-lbl">Absolute Owed Balance</span>
+                    <span class="m-val" id="cust-lbl-pending" style="color: var(--accent-gold);">₹0</span>
+                </div>
+                <div class="metric-block">
+                    <span class="m-lbl">Net Estimated Yield</span>
+                    <span class="m-val" id="cust-lbl-yield" style="color: var(--accent-blue);">₹0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard hide-in-entry-mode">
+            <div class="card entries">
+                <div class="title" id="card-title-entries">Selected Operations</div>
+                <div class="value" id="day-stat-entries">0 Items</div>
+            </div>
+            <div class="card charge">
+                <div class="title" id="card-title-charge">Total Gross Charges</div>
+                <div class="value" id="day-stat-charge">₹0</div>
+            </div>
+            <div class="card expense">
+                <div class="title" id="card-title-expense">Total Expenses</div>
+                <div class="value" id="day-stat-expense">₹0</div>
+            </div>
+            <div class="card profit">
+                <div class="title" id="card-title-profit">Net Total Profit</div>
+                <div class="value" id="day-stat-profit">₹0</div>
+            </div>
+        </div>
+
+        <div class="controls-wrapper">
+            <!-- Service Quick Presets Container -->
+            <div class="presets-container" id="service-presets-holder">
+                <span class="preset-lbl">⚡ Service Presets:</span>
+                <button type="button" class="btn-preset" onclick="applyPreset('Mi Assistant FRP', 350, 300)">Mi Assistant FRP</button>
+                <button type="button" class="btn-preset" onclick="applyPreset('Vivo', 2000, 1700)">Vivo</button>
+                <button type="button" class="btn-preset" onclick="applyPreset('SigmaPlus', 200, 0)">SigmaPlus</button>
+                <button type="button" class="btn-preset" onclick="applyPreset('Xiaomi QC Mi Account', 500, 250)">Xiaomi QC Mi Account</button>
+                <button type="button" class="btn-preset" onclick="applyPreset('Xiaomi MTK Mi Account', 500, 250)">Xiaomi MTK Mi Account</button>
+                <button type="button" class="btn-preset" onclick="applyPreset('Xiaomi QC FRP', 350, 250)">Xiaomi QC FRP</button>
+                <button type="button" class="btn-preset" onclick="applyPreset('Xiaomi MTK FRP', 350, 250)">Xiaomi MTK FRP</button>
+                <button type="button" class="btn-preset" onclick="applyPreset('Unlocktool Rent', 60, 32)">Unlocktool Rent</button>
+                <button type="button" class="btn-preset" onclick="applyPreset('Samsung ADB FRP', 250, 0)">Samsung ADB FRP</button>
+                
+                <button type="button" class="btn-add-custom" onclick="addNewServicePresetPrompt()">+ Add Service Preset</button>
+            </div>
+
+            <form id="job-form" onsubmit="addEntry(event)">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label for="cust-name">Customer Name</label>
+                        <input type="text" id="cust-name" placeholder="Client Name" required oninput="autoPrefixCustomerNumber(this)">
+                        <div class="cust-presets-wrapper" id="customer-presets-holder">
+                            <button type="button" class="btn-add-cust-preset" onclick="addNewCustomerPresetPrompt()">+ Add Client Preset</button>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="repair-service">Service / Repair Info</label>
+                        <input type="text" id="repair-service" placeholder="Service Name" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="val-charge">Service Charge (₹)</label>
+                        <input type="number" id="val-charge" placeholder="0" min="0" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="val-expense">Cost Expense (₹)</label>
+                        <input type="number" id="val-expense" placeholder="0" min="0" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="val-status">Payment Status</label>
+                        <select id="val-status">
+                            <!-- DEFAULT STATUS SWITCHED TO PENDING -->
+                            <option value="PENDING" selected>PENDING</option>
+                            <option value="PAID">PAID</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-submit">Log Record</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="show-in-entry-mode" id="my-entries-panel">
+            <div class="section-title">📋 My Logged Jobs</div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Service</th>
+                            <th>Charge</th>
+                            <th>Status</th>
+                            <th>Receipt</th>
+                        </tr>
+                    </thead>
+                    <tbody id="my-entries-body"></tbody>
+                </table>
+                <div id="my-entries-empty" class="empty-state" style="display: none;">No jobs logged by you yet.</div>
+            </div>
+        </div>
+
+        <div class="section-title hide-in-entry-mode" id="registry-table-title">📋 Selected Date Operation Log Registry</div>
+        <div class="table-container hide-in-entry-mode">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Index</th>
+                        <th>Date</th>
+                        <th>Customer Target</th>
+                        <th>Applied Service Info</th>
+                        <th>Gross Charge</th>
+                        <th>Expenses</th>
+                        <th>Net Profit</th>
+                        <th>Payment Status</th>
+                        <th>Staff</th>
+                        <th>Action Matrix</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
+            <div id="no-data-msg" class="empty-state" style="display: none;">No records matched the active filter parameters.</div>
+        </div>
+    </div>
+
+    <!-- TAB 2: REPORTS -->
+    <div id="report-tab" class="tab-content">
+        <div class="top-month-banner" id="top-month-ribbon">
+            🚀 Best Performing Month Across 12 Months: <span id="top-month-value">Gathering data streams...</span>
+        </div>
+        <div class="section-title">📊 12-Month Performance Matrix & Profit Margins</div>
+        <div class="monthly-grid" id="monthly-analytics-container"></div>
+    </div>
+
+    <!-- TAB 3: TOP CUSTOMERS -->
+    <div id="customers-tab" class="tab-content">
+        <div class="control-panel-grid" style="margin-bottom:20px;">
+            <div class="search-filter-panel">
+                <div class="panel-group">
+                    <label for="top-cust-month-select">📅 Month:</label>
+                    <select id="top-cust-month-select" onchange="renderTopCustomers()">
+                        <option value="all">All Months (Full Year)</option>
+                        <option value="0">January</option>
+                        <option value="1">February</option>
+                        <option value="2">March</option>
+                        <option value="3">April</option>
+                        <option value="4">May</option>
+                        <option value="5">June</option>
+                        <option value="6">July</option>
+                        <option value="7">August</option>
+                        <option value="8">September</option>
+                        <option value="9">October</option>
+                        <option value="10">November</option>
+                        <option value="11">December</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="section-title">🏆 Top 20 Customers by Job Count</div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Customer</th>
+                        <th>Jobs</th>
+                        <th>Total Charged</th>
+                        <th>Total Pending</th>
+                    </tr>
+                </thead>
+                <tbody id="top-customers-body"></tbody>
+            </table>
+            <div id="top-customers-empty" class="empty-state" style="display: none;">No records found for this period.</div>
+        </div>
+    </div>
+
+    <!-- TAB 4: TOOL INVENTORY -->
+    <div id="inventory-tab" class="tab-content">
+        <div class="section-title">🧰 Tool Credit Inventory</div>
+        <div class="add-tool-form">
+            <div class="input-group">
+                <label for="new-tool-name">Tool Name</label>
+                <input type="text" id="new-tool-name" placeholder="e.g. UnlockTool">
+            </div>
+            <div class="input-group">
+                <label for="new-tool-credits">Starting Credits</label>
+                <input type="number" id="new-tool-credits" placeholder="e.g. 500" min="0">
+            </div>
+            <button type="button" class="btn-submit" onclick="addNewTool()">+ Add Tool</button>
+        </div>
+        <div class="tool-inventory-grid" id="tool-inventory-container"></div>
+        <div id="tool-inventory-empty" class="empty-state" style="display: none;">No tools added yet. Add your first tool above.</div>
+
+        <div class="section-title" style="margin-top:35px;">🔗 Services That Require Tool Inventory</div>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-top:-8px;">Only services listed here will ask which tool to deduct credit from. Every other service logs normally with no prompt.</p>
+        <div class="add-tool-form">
+            <div class="input-group" style="flex-grow:1;">
+                <label for="new-linked-service">Service Name</label>
+                <input type="text" id="new-linked-service" placeholder="e.g. Xiaomi Mi Account" list="linked-service-suggestions" style="width:100%;">
+                <datalist id="linked-service-suggestions"></datalist>
+            </div>
+            <button type="button" class="btn-submit" onclick="addLinkedService()">🔗 Link Service</button>
+        </div>
+        <div id="linked-services-container" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px;"></div>
+        <div id="linked-services-empty" class="empty-state" style="display: none;">No services linked yet. Every job will log normally without asking about tool inventory.</div>
+    </div>
+</div>
+
+<!-- Tool credit usage modal (shown only for services linked to inventory) -->
+<div id="tool-modal-overlay" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+        <div class="modal-title">🧰 Tool Credit Usage</div>
+        <div class="modal-sub" id="tool-modal-service-name"></div>
+        <div id="tool-modal-list" class="tool-modal-list"></div>
+        <div class="input-group" style="margin:15px 0 5px 0;">
+            <label for="tool-modal-credits-input" style="font-weight:bold; color:var(--accent-blue); font-size:0.85rem;">Credits to deduct for this job</label>
+            <input type="number" id="tool-modal-credits-input" min="0" value="1" oninput="updateToolModalWarning()" style="width:100%; box-sizing:border-box; background-color:var(--bg-color); border:1px solid var(--border-color); color:var(--text-main); padding:8px 12px; border-radius:5px; font-size:1rem; outline:none;">
+            <div id="tool-modal-warning" style="color:var(--accent-red); font-size:0.8rem; margin-top:5px; display:none;"></div>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-modal-skip" onclick="skipToolModal()">Skip (No Inventory)</button>
+            <button type="button" class="btn-modal-confirm" onclick="confirmToolModalDeduction()">Confirm &amp; Deduct</button>
+        </div>
+    </div>
+</div>
+
+<!-- Custom themed dialog: replaces all native alert() / confirm() / prompt() popups -->
+<div id="custom-dialog-overlay" class="modal-overlay" style="display:none;" onmousedown="if(event.target===this) customDialogCancel();">
+    <div class="modal-box">
+        <div class="modal-title" id="custom-dialog-title" style="display:none;"></div>
+        <div class="custom-dialog-message" id="custom-dialog-message"></div>
+        <div class="custom-dialog-input-wrap" id="custom-dialog-input-wrap" style="display:none;">
+            <input type="text" id="custom-dialog-input" class="custom-dialog-input" autocomplete="off">
+        </div>
+        <div class="custom-dialog-choice-list" id="custom-dialog-choice-list" style="display:none;"></div>
+        <div class="modal-actions" id="custom-dialog-actions">
+            <button type="button" class="btn-modal-skip" id="custom-dialog-cancel" onclick="customDialogCancel()">Cancel</button>
+            <button type="button" class="btn-modal-confirm" id="custom-dialog-ok" onclick="customDialogOk()">OK</button>
+        </div>
+    </div>
+</div>
+
+<!-- Cloud Sync modal: push/pull repairRecords to a JSON file in an auto-created private GitHub repo -->
+<div id="sync-modal-overlay" class="modal-overlay" style="display:none;" onmousedown="if(event.target===this) closeSyncModal();">
+    <div class="modal-box" style="width:420px;">
+        <div class="modal-title">☁️ Cloud Sync (GitHub)</div>
+        <div class="modal-sub">Paste your token — everything else (repo, syncing) happens automatically.</div>
+
+        <div class="sync-form-group">
+            <label for="sync-token-input">Personal Access Token</label>
+            <input type="password" id="sync-token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+            <span class="sync-hint">Classic token with "repo" scope, so the app can create your private data repo automatically. Stored only in this browser — never uploaded anywhere except directly to GitHub's API.</span>
+        </div>
+
+        <div class="sync-status-box" id="sync-status-box">Not connected.</div>
+
+        <div class="sync-actions-row">
+            <button type="button" class="btn-sync-save" onclick="connectSync()">🔌 Connect &amp; Auto-Sync</button>
+        </div>
+        <div class="sync-actions-row">
+            <button type="button" class="btn-sync-push" onclick="pushToCloud()">⬆️ Push Now</button>
+            <button type="button" class="btn-sync-pull" onclick="pullFromCloud()">⬇️ Pull Now</button>
+        </div>
+        <div class="sync-actions-row">
+            <button type="button" class="btn-sync-disconnect" onclick="disconnectSync()">🔌 Disconnect / Clear Token</button>
+        </div>
+        <div class="sync-actions-row">
+            <button type="button" class="btn-modal-skip" onclick="closeSyncModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ================= Custom Dialog System (replaces native alert/confirm/prompt) =================
+    let __dialogResolver = null;
+
+    function __closeCustomDialog(result) {
+        document.getElementById('custom-dialog-overlay').style.display = 'none';
+        const resolve = __dialogResolver;
+        __dialogResolver = null;
+        if (resolve) resolve(result);
+    }
+
+    function __resetCustomDialogUI() {
+        document.getElementById('custom-dialog-title').style.display = 'none';
+        document.getElementById('custom-dialog-message').style.display = 'block';
+        document.getElementById('custom-dialog-input-wrap').style.display = 'none';
+        document.getElementById('custom-dialog-choice-list').style.display = 'none';
+        document.getElementById('custom-dialog-actions').style.display = 'flex';
+        document.getElementById('custom-dialog-cancel').style.display = 'block';
+        document.getElementById('custom-dialog-cancel').innerText = 'Cancel';
+        document.getElementById('custom-dialog-ok').style.display = 'block';
+        document.getElementById('custom-dialog-ok').innerText = 'OK';
+        document.getElementById('custom-dialog-ok').classList.remove('btn-modal-danger');
+    }
+
+    function customAlert(message, title = '') {
+        return new Promise(resolve => {
+            __dialogResolver = resolve;
+            __resetCustomDialogUI();
+            document.getElementById('custom-dialog-title').innerText = title;
+            document.getElementById('custom-dialog-title').style.display = title ? 'block' : 'none';
+            document.getElementById('custom-dialog-message').innerText = message;
+            document.getElementById('custom-dialog-cancel').style.display = 'none';
+            document.getElementById('custom-dialog-overlay').style.display = 'flex';
+            setTimeout(() => document.getElementById('custom-dialog-ok').focus(), 30);
+        });
+    }
+
+    function customConfirm(message, title = '', danger = false, okText = '') {
+        return new Promise(resolve => {
+            __dialogResolver = resolve;
+            __resetCustomDialogUI();
+            document.getElementById('custom-dialog-title').innerText = title;
+            document.getElementById('custom-dialog-title').style.display = title ? 'block' : 'none';
+            document.getElementById('custom-dialog-message').innerText = message;
+            if (danger) {
+                document.getElementById('custom-dialog-ok').classList.add('btn-modal-danger');
+                document.getElementById('custom-dialog-ok').innerText = okText || 'Remove';
+            } else if (okText) {
+                document.getElementById('custom-dialog-ok').innerText = okText;
+            }
+            document.getElementById('custom-dialog-overlay').style.display = 'flex';
+            setTimeout(() => document.getElementById('custom-dialog-ok').focus(), 30);
+        });
+    }
+
+    function customPrompt(message, defaultValue = '', title = '', inputType = 'text') {
+        return new Promise(resolve => {
+            __dialogResolver = resolve;
+            __resetCustomDialogUI();
+            document.getElementById('custom-dialog-title').innerText = title;
+            document.getElementById('custom-dialog-title').style.display = title ? 'block' : 'none';
+            document.getElementById('custom-dialog-message').innerText = message;
+            document.getElementById('custom-dialog-message').style.display = message ? 'block' : 'none';
+            document.getElementById('custom-dialog-input-wrap').style.display = 'block';
+            const input = document.getElementById('custom-dialog-input');
+            input.type = inputType;
+            input.value = (defaultValue === null || defaultValue === undefined) ? '' : defaultValue;
+            document.getElementById('custom-dialog-overlay').style.display = 'flex';
+            setTimeout(() => { input.focus(); input.select(); }, 30);
+        });
+    }
+
+    // Themed replacement for "type a number to choose" style prompts — shows real tappable options.
+    function customChoice(title, message, options) {
+        return new Promise(resolve => {
+            __dialogResolver = resolve;
+            __resetCustomDialogUI();
+            document.getElementById('custom-dialog-title').innerText = title;
+            document.getElementById('custom-dialog-title').style.display = title ? 'block' : 'none';
+            document.getElementById('custom-dialog-message').innerText = message;
+            document.getElementById('custom-dialog-message').style.display = message ? 'block' : 'none';
+            document.getElementById('custom-dialog-actions').style.display = 'none';
+            const listWrap = document.getElementById('custom-dialog-choice-list');
+            listWrap.innerHTML = '';
+            listWrap.style.display = 'flex';
+            options.forEach((label, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'custom-dialog-choice-btn';
+                btn.innerText = label;
+                btn.onclick = () => __closeCustomDialog(idx);
+                listWrap.appendChild(btn);
+            });
+            const cancelBtn = document.createElement('button');
+            cancelBtn.type = 'button';
+            cancelBtn.className = 'btn-modal-skip';
+            cancelBtn.style.marginTop = '4px';
+            cancelBtn.innerText = 'Cancel';
+            cancelBtn.onclick = () => __closeCustomDialog(null);
+            listWrap.appendChild(cancelBtn);
+            document.getElementById('custom-dialog-overlay').style.display = 'flex';
+        });
+    }
+
+    function customDialogOk() {
+        const isPrompt = document.getElementById('custom-dialog-input-wrap').style.display === 'block';
+        if (isPrompt) {
+            __closeCustomDialog(document.getElementById('custom-dialog-input').value);
+        } else {
+            __closeCustomDialog(true);
+        }
+    }
+
+    function customDialogCancel() {
+        const isPrompt = document.getElementById('custom-dialog-input-wrap').style.display === 'block';
+        __closeCustomDialog(isPrompt ? null : false);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        const overlay = document.getElementById('custom-dialog-overlay');
+        if (!overlay || overlay.style.display !== 'flex') return;
+        if (e.key === 'Escape') { e.preventDefault(); customDialogCancel(); }
+        if (e.key === 'Enter' && document.getElementById('custom-dialog-actions').style.display !== 'none') {
+            e.preventDefault();
+            customDialogOk();
+        }
+    });
+
+    let repairRecords = JSON.parse(localStorage.getItem('tabbed_repair_logs')) || [];
+    let customServicePresets = JSON.parse(localStorage.getItem('custom_services_arr')) || [];
+    let customCustomerPresets = JSON.parse(localStorage.getItem('custom_customers_arr')) || [];
+    let toolInventory = JSON.parse(localStorage.getItem('tool_inventory_arr')) || [];
+    
+    const monthNamesArr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    window.onload = async function() {
+        const todayInputStr = getLocalDateStringISO(new Date());
+        document.getElementById('target-date-input').value = todayInputStr;
+        
+        renderCustomServicePresets();
+        renderCustomCustomerPresets();
+        
+        handleDateChange();
+
+        if (localStorage.getItem('entry_only_mode') === 'true') {
+            document.body.classList.add('entry-only-mode');
+        }
+        updateEntryModeButton();
+        renderMyEntriesPanel();
+
+        updateSyncButtonState();
+        const cfg = getSyncConfig();
+        if (cfg && cfg.autoPull) {
+            await pullFromCloud(true);
+            renderMyEntriesPanel();
+        }
+    }
+
+    // ---------- Staff list helpers ----------
+    function getStaffList() {
+        return JSON.parse(localStorage.getItem('shop_staff_list')) || [];
+    }
+    function saveStaffList(list) {
+        localStorage.setItem('shop_staff_list', JSON.stringify(list));
+    }
+    function getActiveSession() {
+        return JSON.parse(localStorage.getItem('active_staff_session') || 'null');
+    }
+
+    // ---------- Owner-only: Manage Staff & PINs ----------
+    async function manageStaffAndPins() {
+        const idx = await customChoice(
+            "👥 Manage Staff & PINs",
+            "Choose an action:",
+            ["➕ Add New Staff", "🗑️ Remove Staff", "🔑 Change a Staff PIN", "🔐 Change Owner PIN", "📋 View Staff List"]
+        );
+        if (idx === null) return;
+
+        switch (idx) {
+            case 0: addNewStaff(); break;
+            case 1: removeStaffPrompt(); break;
+            case 2: changeStaffPinPrompt(); break;
+            case 3: changeOwnerPinPrompt(); break;
+            case 4: viewStaffListAlert(); break;
+        }
+    }
+
+    async function addNewStaff() {
+        const name = await customPrompt("Enter new staff name:", "", "➕ Add New Staff");
+        if (!name || !name.trim()) return;
+
+        const staffList = getStaffList();
+        if (staffList.some(s => s.name.toLowerCase() === name.trim().toLowerCase())) {
+            await customAlert("A staff member with this name already exists.");
+            return;
+        }
+
+        const pin = await customPrompt(`Set a PIN for "${name.trim()}" (they'll use this to start their entry session):`, "", "🔑 Set Staff PIN", "password");
+        if (!pin || !pin.trim()) {
+            await customAlert("PIN is required to add staff.");
+            return;
+        }
+
+        staffList.push({ id: Date.now().toString(), name: name.trim(), pin: pin.trim() });
+        saveStaffList(staffList);
+        await customAlert(`Staff "${name.trim()}" added successfully.`, "✅ Staff Added");
+    }
+
+    async function removeStaffPrompt() {
+        const staffList = getStaffList();
+        if (staffList.length === 0) {
+            await customAlert("No staff added yet.");
+            return;
+        }
+        const idx = await customChoice("🗑️ Remove Staff", "Which staff do you want to remove?", staffList.map(s => s.name));
+        if (idx === null) return;
+
+        const removed = staffList.splice(idx, 1)[0];
+        saveStaffList(staffList);
+        await customAlert(`Staff "${removed.name}" removed.`, "🗑️ Staff Removed");
+    }
+
+    async function changeStaffPinPrompt() {
+        const staffList = getStaffList();
+        if (staffList.length === 0) {
+            await customAlert("No staff added yet.");
+            return;
+        }
+        const idx = await customChoice("🔑 Change Staff PIN", "Change PIN for which staff?", staffList.map(s => s.name));
+        if (idx === null) return;
+
+        const newPin = await customPrompt(`Enter new PIN for ${staffList[idx].name}:`, "", "🔑 New PIN", "password");
+        if (!newPin || !newPin.trim()) return;
+
+        staffList[idx].pin = newPin.trim();
+        saveStaffList(staffList);
+        await customAlert(`PIN updated for ${staffList[idx].name}.`, "🔑 PIN Updated");
+    }
+
+    async function changeOwnerPinPrompt() {
+        const currentPin = localStorage.getItem('shop_owner_pin');
+        if (currentPin) {
+            const verify = await customPrompt("Enter your CURRENT Owner PIN to confirm:", "", "🔐 Verify Owner PIN", "password");
+            if (verify === null) return;
+            if (verify.trim() !== currentPin) {
+                await customAlert("Incorrect current PIN. Owner PIN was not changed.", "❌ Not Changed");
+                return;
+            }
+        }
+        const newPin = await customPrompt("Enter your NEW Owner PIN:", "", "🔐 New Owner PIN", "password");
+        if (!newPin || !newPin.trim()) return;
+
+        localStorage.setItem('shop_owner_pin', newPin.trim());
+        await customAlert("Owner PIN updated successfully.", "🔑 Owner PIN Updated");
+    }
+
+    async function viewStaffListAlert() {
+        const staffList = getStaffList();
+        if (staffList.length === 0) {
+            await customAlert("No staff added yet. Use 'Add New Staff' to get started.");
+            return;
+        }
+        const names = staffList.map((s, i) => `${i + 1}. ${s.name}`).join("\n");
+        await customAlert(names, "👥 Current Staff");
+    }
+
+    // ---------- Staff Entry Mode (multi-staff login) ----------
+    async function toggleEntryOnlyMode() {
+        const isActive = document.body.classList.contains('entry-only-mode');
+
+        if (!isActive) {
+            const staffList = getStaffList();
+            const ownerPin = localStorage.getItem('shop_owner_pin');
+
+            if (staffList.length === 0 && !ownerPin) {
+                await customAlert("Please set up your Owner PIN and add at least one staff first, using '👥 Manage Staff & PINs'.");
+                return;
+            }
+
+            const enteredPin = await customPrompt("Enter Staff PIN to start entry session:", "", "🔒 Staff Login", "password");
+            if (enteredPin === null) return;
+            const pinTrimmed = enteredPin.trim();
+
+            let session = null;
+            const matchedStaff = staffList.find(s => s.pin === pinTrimmed);
+            if (matchedStaff) {
+                session = { id: matchedStaff.id, name: matchedStaff.name };
+            } else if (ownerPin && pinTrimmed === ownerPin) {
+                session = { id: 'owner', name: 'Owner' };
+            }
+
+            if (!session) {
+                await customAlert("PIN not recognized.", "❌ Login Failed");
+                return;
+            }
+
+            localStorage.setItem('active_staff_session', JSON.stringify(session));
+            localStorage.setItem('entry_only_mode', 'true');
+            document.body.classList.add('entry-only-mode');
+            document.getElementById('customer-search-input').value = "";
+            updateEntryModeButton();
+            renderMyEntriesPanel();
+            await customAlert(`Logged in as: ${session.name}\nOnly the entry form and their own logged jobs are visible now — no totals, no profit.`, "🔒 Staff Entry Mode ON");
+        } else {
+            // Only the Owner PIN can exit Staff Entry Mode
+            const enteredPin = await customPrompt("Enter Owner PIN to unlock full view:", "", "🔓 Exit Staff Mode", "password");
+            if (enteredPin === null) return;
+            const savedPin = localStorage.getItem('shop_owner_pin');
+            if (enteredPin.trim() === savedPin) {
+                document.body.classList.remove('entry-only-mode');
+                localStorage.setItem('entry_only_mode', 'false');
+                localStorage.removeItem('active_staff_session');
+                updateEntryModeButton();
+                renderTargetWorkspace();
+                await customAlert("Full view restored.", "🔓 Staff Entry Mode OFF");
+            } else {
+                await customAlert("Incorrect PIN. Staff Entry Mode remains ON.", "❌ Incorrect PIN");
+            }
+        }
+    }
+
+    function updateEntryModeButton() {
+        const btn = document.getElementById('entry-mode-toggle-btn');
+        if (!btn) return;
+        const isActive = document.body.classList.contains('entry-only-mode');
+        btn.innerText = isActive ? "🔓 Exit Staff Mode" : "🔒 Staff Entry Mode";
+
+        const bannerText = document.getElementById('entry-mode-banner-text');
+        if (bannerText) {
+            const session = getActiveSession();
+            bannerText.innerText = session
+                ? `🔒 STAFF ENTRY MODE — Logged in as ${session.name}. Only their own logged jobs are shown, no profit or shop totals.`
+                : `🔒 STAFF ENTRY MODE — Only new job entry is available. Ask the owner to unlock for full access.`;
+        }
+    }
+
+    function renderMyEntriesPanel() {
+        const tbody = document.getElementById('my-entries-body');
+        const emptyMsg = document.getElementById('my-entries-empty');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const session = getActiveSession();
+        if (!session) return;
+
+        const myJobs = repairRecords.filter(item => item.enteredBy === session.name);
+
+        if (myJobs.length === 0) {
+            emptyMsg.style.display = 'block';
+            return;
+        }
+        emptyMsg.style.display = 'none';
+
+        myJobs.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="color: var(--text-muted); font-size: 0.85rem;">${item.date}</td>
+                <td style="font-weight: 600;">${item.name}</td>
+                <td><span style="color: var(--accent-blue);">${item.service}</span></td>
+                <td>₹${item.charge.toLocaleString('en-IN')}</td>
+                <td><span class="badge ${item.status.toLowerCase()}">${item.status}</span></td>
+                <td><button class="btn-action" onclick="printReceipt(${item.id})" title="Print receipt">🖨️</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ---------- Printable customer receipt ----------
+    function printReceipt(id) {
+        const item = repairRecords.find(r => r.id === id);
+        if (!item) return;
+
+        const fullCost = item.originalCharge || item.charge;
+        const paidSoFar = item.partialPaidAmt > 0 ? item.partialPaidAmt : (item.status === 'PAID' ? fullCost : 0);
+        const balanceDue = fullCost - paidSoFar;
+
+        const receiptHTML = `
+            <html>
+            <head>
+                <title>Receipt - ${item.name}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 30px; color: #111; }
+                    h1 { font-size: 1.4rem; margin-bottom: 0; }
+                    .sub { color: #555; margin-top: 4px; margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                    td, th { padding: 8px 10px; border-bottom: 1px solid #ddd; text-align: left; }
+                    th { color: #555; width: 40%; }
+                    .total-row td, .total-row th { font-weight: bold; border-top: 2px solid #333; }
+                    .footer { margin-top: 30px; text-align: center; color: #555; font-size: 0.9rem; }
+                </style>
+            </head>
+            <body>
+                <h1>FIXWITHYUVI</h1>
+                <div class="sub">Service Receipt</div>
+                <table>
+                    <tr><th>Customer</th><td>${item.name}</td></tr>
+                    <tr><th>Date</th><td>${item.date}</td></tr>
+                    <tr><th>Service</th><td>${item.service}</td></tr>
+                    <tr><th>Total Charge</th><td>₹${fullCost.toLocaleString('en-IN')}</td></tr>
+                    <tr><th>Paid</th><td>₹${paidSoFar.toLocaleString('en-IN')}</td></tr>
+                    <tr class="total-row"><th>Balance Due</th><td>₹${balanceDue.toLocaleString('en-IN')}</td></tr>
+                    <tr><th>Status</th><td>${item.status}</td></tr>
+                </table>
+                <div class="footer">Thanks for choosing FIXWITHYUVI! 🙏</div>
+            </body>
+            </html>
+        `;
+
+        const receiptWindow = window.open('', '_blank', 'width=420,height=600');
+        if (!receiptWindow) {
+            customAlert("Please allow popups for this site to print the receipt.");
+            return;
+        }
+        receiptWindow.document.write(receiptHTML);
+        receiptWindow.document.close();
+        receiptWindow.focus();
+        receiptWindow.print();
+    }
+
+
+    function switchTab(tabId, btnElement) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btnElement.classList.add('active');
+    }
+
+    function getLocalDateStringISO(dateObj) {
+        const tzOffset = dateObj.getTimezoneOffset() * 60000;
+        return (new Date(dateObj.getTime() - tzOffset)).toISOString().split('T')[0];
+    }
+
+    function parseDateStringToISO(dateString) {
+        const parts = dateString.split('-');
+        if(parts.length !== 3) return "";
+        const dummyDate = new Date(`${parts[1]} 1, ${parts[2]}`);
+        const monthNum = (dummyDate.getMonth() + 1).toString().padStart(2, '0');
+        return `${parts[2]}-${monthNum}-${parts[0].padStart(2, '0')}`;
+    }
+
+    function formatISODateToDisplay(isoString) {
+        const parts = isoString.split('-');
+        if(parts.length !== 3) return isoString;
+        const dummyDate = new Date(parts[0], parts[1] - 1, parts[2]);
+        return `${parts[2].padStart(2, '0')}-${dummyDate.toLocaleString('default', { month: 'short' })}-${parts[0]}`;
+    }
+
+    function handleDateChange() {
+        document.getElementById('customer-search-input').value = "";
+        const selectedISO = document.getElementById('target-date-input').value;
+        document.getElementById('current-date-badge').innerText = 
+            (selectedISO === getLocalDateStringISO(new Date())) ? "Showing: Today" : `Showing: ${formatISODateToDisplay(selectedISO)}`;
+        renderTargetWorkspace();
+    }
+
+    function applyPreset(serviceName, chargeVal, expenseVal) {
+        document.getElementById('repair-service').value = serviceName;
+        document.getElementById('val-charge').value = chargeVal;
+        document.getElementById('val-expense').value = expenseVal;
+    }
+
+    function applyCustomerPreset(customerName) {
+        document.getElementById('cust-name').value = customerName;
+    }
+
+    async function addNewServicePresetPrompt() {
+        const label = await customPrompt("Enter Service Name (e.g. Realme FRP):", "", "➕ New Service Preset");
+        if (!label) return;
+        const chargeStr = await customPrompt("Enter Service Charge Amount (₹):", "0", "➕ New Service Preset");
+        if (chargeStr === null) return;
+        const expenseStr = await customPrompt("Enter Cost Expense Value (₹):", "0", "➕ New Service Preset");
+        if (expenseStr === null) return;
+        const charge = parseFloat(chargeStr) || 0;
+        const expense = parseFloat(expenseStr) || 0;
+
+        customServicePresets.push({ label, charge, expense });
+        localStorage.setItem('custom_services_arr', JSON.stringify(customServicePresets));
+        renderCustomServicePresets();
+    }
+
+    function renderCustomServicePresets() {
+        const container = document.getElementById('service-presets-holder');
+        document.querySelectorAll('.dynamic-service-node').forEach(n => n.remove());
+
+        customServicePresets.forEach(item => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-preset dynamic-service-node';
+            btn.style.borderColor = 'rgba(74, 222, 128, 0.4)';
+            btn.style.color = 'var(--accent-green)';
+            btn.innerText = item.label;
+            btn.onclick = () => applyPreset(item.label, item.charge, item.expense);
+            
+            container.insertBefore(btn, container.lastElementChild);
+        });
+    }
+
+    async function addNewCustomerPresetPrompt() {
+        const clientName = await customPrompt("Enter Frequently Used Customer Name:", "", "➕ New Customer Shortcut");
+        if (!clientName) return;
+
+        customCustomerPresets.push(clientName.trim());
+        localStorage.setItem('custom_customers_arr', JSON.stringify(customCustomerPresets));
+        renderCustomCustomerPresets();
+    }
+
+    // Prints customer shortcuts right underneath name field box layout
+    function renderCustomCustomerPresets() {
+        const container = document.getElementById('customer-presets-holder');
+        document.querySelectorAll('.dynamic-customer-node').forEach(n => n.remove());
+
+        customCustomerPresets.forEach(name => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-cust-preset dynamic-customer-node';
+            btn.innerText = name;
+            btn.onclick = () => applyCustomerPreset(name);
+
+            container.insertBefore(btn, container.lastElementChild);
+        });
+    }
+
+    function autoPrefixCustomerNumber(inputEl) {
+        const raw = inputEl.value.trim();
+        // Only auto-add "CUS " when the person has typed pure digits (e.g. "4").
+        // Normal names like "Raja" or "Ram" are left untouched.
+        if (/^\d+$/.test(raw)) {
+            inputEl.value = `CUS ${raw}`;
+            // Keep cursor at the end so typing more digits still works naturally
+            inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length);
+        }
+    }
+
+    function addEntry(e) {
+        e.preventDefault();
+
+        let name = document.getElementById('cust-name').value.trim();
+        if (/^\d+$/.test(name)) {
+            name = `CUS ${name}`;
+        }
+        const service = document.getElementById('repair-service').value.trim();
+        const charge = parseFloat(document.getElementById('val-charge').value) || 0;
+        const expense = parseFloat(document.getElementById('val-expense').value) || 0;
+        const status = document.getElementById('val-status').value;
+        
+        const selectedISO = document.getElementById('target-date-input').value;
+        const parts = selectedISO.split('-');
+        const targetDateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+        const formattedDisplayDate = formatISODateToDisplay(selectedISO);
+
+        const activeSession = JSON.parse(localStorage.getItem('active_staff_session') || 'null');
+        const enteredBy = activeSession ? activeSession.name : 'Owner';
+
+        const fieldData = { name, service, charge, expense, status, selectedISO, targetDateObj, formattedDisplayDate, enteredBy };
+
+        // Only services explicitly linked to Tool Inventory (in the Tool Inventory tab) trigger the popup.
+        // Every other service logs normally with no prompt at all.
+        if (serviceRequiresInventory(service) && toolInventory.length > 0) {
+            openToolDeductionModal(service, function(toolResult) {
+                finalizeJobEntry(fieldData, toolResult);
+            });
+        } else {
+            finalizeJobEntry(fieldData, { toolUsed: null, toolCreditsUsed: 0 });
+        }
+    }
+
+    function finalizeJobEntry(fieldData, toolResult) {
+        const newLog = {
+            id: Date.now(),
+            date: fieldData.formattedDisplayDate,
+            isoDateStr: fieldData.selectedISO,
+            rawMonth: fieldData.targetDateObj.getMonth(),
+            name: fieldData.name,
+            service: fieldData.service,
+            charge: fieldData.charge,
+            originalCharge: fieldData.charge,
+            partialPaidAmt: 0,
+            expense: fieldData.expense,
+            status: fieldData.status,
+            enteredBy: fieldData.enteredBy,
+            toolUsed: toolResult.toolUsed,
+            toolCreditsUsed: toolResult.toolCreditsUsed
+        };
+
+        repairRecords.unshift(newLog);
+        saveState();
+        document.getElementById('customer-search-input').value = "";
+        renderTargetWorkspace();
+        renderMyEntriesPanel();
+        
+        document.getElementById('repair-service').value = "";
+        document.getElementById('val-charge').value = "";
+        document.getElementById('val-expense').value = "";
+        // Reset dropdown status back to default PENDING for next entry
+        document.getElementById('val-status').value = "PENDING";
+        document.getElementById('repair-service').focus();
+    }
+
+    function saveState() {
+        localStorage.setItem('tabbed_repair_logs', JSON.stringify(repairRecords));
+        maybeAutoPush();
+    }
+
+    // ================= Cloud Sync (GitHub Contents API) =================
+    const AUTO_SYNC_REPO_NAME = 'work-hub-cloud-data';
+    const AUTO_SYNC_FILE_PATH = 'records.json';
+
+    function getSyncConfig() {
+        return JSON.parse(localStorage.getItem('gh_sync_config') || 'null');
+    }
+
+    function setSyncStatus(text, isError = false) {
+        const box = document.getElementById('sync-status-box');
+        if (!box) return;
+        box.innerText = text;
+        box.style.color = isError ? 'var(--accent-red)' : 'var(--text-muted)';
+    }
+
+    function updateSyncButtonState() {
+        const btn = document.getElementById('cloud-sync-btn');
+        if (!btn) return;
+        const cfg = getSyncConfig();
+        btn.classList.toggle('sync-connected', !!(cfg && cfg.token && cfg.repo));
+    }
+
+    function openSyncModal() {
+        const cfg = getSyncConfig();
+        if (cfg && cfg.token) {
+            document.getElementById('sync-token-input').value = cfg.token;
+            const lastSync = localStorage.getItem('gh_sync_last');
+            setSyncStatus(`✅ Connected as ${cfg.owner}. Auto-sync is ON.` + (lastSync ? ` Last synced: ${new Date(lastSync).toLocaleString()}` : ' Not synced yet.'));
+        } else {
+            document.getElementById('sync-token-input').value = '';
+            setSyncStatus('Not connected.');
+        }
+        document.getElementById('sync-modal-overlay').style.display = 'flex';
+    }
+
+    function closeSyncModal() {
+        document.getElementById('sync-modal-overlay').style.display = 'none';
+    }
+
+    function ghAuthHeaders(token) {
+        return { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
+    }
+
+    // Paste a token → find the account it belongs to → auto-create (or reuse) a private
+    // "work-hub-cloud-data" repo → save config → do an initial sync. No repo name typing needed.
+    async function connectSync() {
+        const token = document.getElementById('sync-token-input').value.trim();
+        if (!token) {
+            setSyncStatus('Please paste a token first.', true);
+            return;
+        }
+        setSyncStatus('Connecting…');
+        try {
+            const userRes = await fetch('https://api.github.com/user', { headers: ghAuthHeaders(token) });
+            if (userRes.status === 401) throw new Error('Token rejected — check it is valid and not expired.');
+            if (!userRes.ok) throw new Error(`GitHub error ${userRes.status}`);
+            const user = await userRes.json();
+            const owner = user.login;
+
+            let branch = 'main';
+            const repoRes = await fetch(`https://api.github.com/repos/${owner}/${AUTO_SYNC_REPO_NAME}`, { headers: ghAuthHeaders(token) });
+            if (repoRes.status === 404) {
+                setSyncStatus('Creating your private data repo…');
+                const createRes = await fetch('https://api.github.com/user/repos', {
+                    method: 'POST',
+                    headers: ghAuthHeaders(token),
+                    body: JSON.stringify({
+                        name: AUTO_SYNC_REPO_NAME,
+                        private: true,
+                        auto_init: true,
+                        description: 'Automation Work Hub — cloud data storage'
+                    })
+                });
+                if (!createRes.ok) {
+                    const body = await createRes.json().catch(() => ({}));
+                    throw new Error(body.message || `Could not create repo automatically (${createRes.status}). Make sure the token has "repo" scope.`);
+                }
+                const created = await createRes.json();
+                branch = created.default_branch || 'main';
+            } else if (repoRes.ok) {
+                const existing = await repoRes.json();
+                branch = existing.default_branch || 'main';
+            } else {
+                throw new Error(`GitHub error ${repoRes.status}`);
+            }
+
+            const cfg = { token, owner, repo: `${owner}/${AUTO_SYNC_REPO_NAME}`, path: AUTO_SYNC_FILE_PATH, branch, autoPull: true, autoPush: true };
+            localStorage.setItem('gh_sync_config', JSON.stringify(cfg));
+            updateSyncButtonState();
+            setSyncStatus(`✅ Connected as ${owner}. Auto-sync is ON — syncing now…`);
+
+            await pullFromCloud(true);
+            await pushToCloud(true);
+            setSyncStatus(`✅ Connected as ${owner}. Auto-sync is ON.`);
+        } catch (err) {
+            setSyncStatus(`❌ ${err.message}`, true);
+        }
+    }
+
+    async function disconnectSync() {
+        const ok = await customConfirm("This clears the saved GitHub token from this browser and turns off auto-sync. Your data already pushed to GitHub is unaffected.", "🔌 Disconnect Cloud Sync", false, "Disconnect");
+        if (!ok) return;
+        localStorage.removeItem('gh_sync_config');
+        localStorage.removeItem('gh_sync_last');
+        document.getElementById('sync-token-input').value = '';
+        updateSyncButtonState();
+        setSyncStatus('Disconnected. Not connected.');
+    }
+
+    function b64EncodeUnicode(str) {
+        return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (m, p1) => String.fromCharCode('0x' + p1)));
+    }
+
+    function b64DecodeUnicode(str) {
+        return decodeURIComponent(atob(str.replace(/\n/g, '')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+    }
+
+    async function ghGetFile(cfg) {
+        const url = `https://api.github.com/repos/${cfg.repo}/contents/${cfg.path.split('/').map(encodeURIComponent).join('/')}?ref=${encodeURIComponent(cfg.branch)}`;
+        const res = await fetch(url, {
+            headers: { 'Authorization': `token ${cfg.token}`, 'Accept': 'application/vnd.github+json' }
+        });
+        if (res.status === 404) return null;
+        if (res.status === 401 || res.status === 403) throw new Error('Token rejected — check it is valid and has repo access.');
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body.message || `GitHub error ${res.status}`);
+        }
+        return res.json();
+    }
+
+    async function pushToCloud(silent = false) {
+        const cfg = getSyncConfig();
+        if (!cfg || !cfg.token || !cfg.repo) {
+            if (!silent) setSyncStatus('Please connect with a token first.', true);
+            return;
+        }
+        if (!silent) setSyncStatus('Pushing to GitHub…');
+        try {
+            const existing = await ghGetFile(cfg);
+            const content = b64EncodeUnicode(JSON.stringify(repairRecords, null, 2));
+            const putRes = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path.split('/').map(encodeURIComponent).join('/')}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `token ${cfg.token}`, 'Accept': 'application/vnd.github+json' },
+                body: JSON.stringify({
+                    message: `Sync data — ${new Date().toISOString()}`,
+                    content,
+                    branch: cfg.branch,
+                    ...(existing ? { sha: existing.sha } : {})
+                })
+            });
+            if (!putRes.ok) {
+                const body = await putRes.json().catch(() => ({}));
+                throw new Error(body.message || `GitHub error ${putRes.status}`);
+            }
+            localStorage.setItem('gh_sync_last', new Date().toISOString());
+            if (!silent) setSyncStatus(`✅ Pushed ${repairRecords.length} records at ${new Date().toLocaleTimeString()}`);
+        } catch (err) {
+            if (!silent) setSyncStatus(`❌ Push failed: ${err.message}`, true);
+        }
+    }
+
+    async function pullFromCloud(silent = false) {
+        const cfg = getSyncConfig();
+        if (!cfg || !cfg.token || !cfg.repo) {
+            if (!silent) setSyncStatus('Please save your Token and Repository first.', true);
+            return;
+        }
+        if (!silent) setSyncStatus('Pulling from GitHub…');
+        try {
+            const file = await ghGetFile(cfg);
+            if (!file) {
+                if (!silent) setSyncStatus('No data found in cloud yet. Push first to create it.');
+                return;
+            }
+            const decoded = b64DecodeUnicode(file.content);
+            const parsed = JSON.parse(decoded);
+            if (!Array.isArray(parsed)) throw new Error('Cloud file is not valid records data.');
+
+            if (!silent) {
+                const ok = await customConfirm(`Found ${parsed.length} records in cloud (local has ${repairRecords.length}). Overwrite local data with cloud version?`, '☁️ Pull from Cloud', false, 'Overwrite Local');
+                if (!ok) { setSyncStatus('Pull cancelled.'); return; }
+            }
+
+            repairRecords = parsed;
+            localStorage.setItem('tabbed_repair_logs', JSON.stringify(repairRecords));
+            handleDateChange();
+            localStorage.setItem('gh_sync_last', new Date().toISOString());
+            if (!silent) setSyncStatus(`✅ Pulled ${parsed.length} records at ${new Date().toLocaleTimeString()}`);
+        } catch (err) {
+            if (!silent) setSyncStatus(`❌ Pull failed: ${err.message}`, true);
+        }
+    }
+
+    let __autoPushTimer = null;
+    function maybeAutoPush() {
+        const cfg = getSyncConfig();
+        if (!cfg || !cfg.autoPush || !cfg.token || !cfg.repo) return;
+        // Debounce so rapid successive saves don't spam the GitHub API.
+        clearTimeout(__autoPushTimer);
+        __autoPushTimer = setTimeout(() => { pushToCloud(); }, 2500);
+    }
+
+    // ---------- Tool Credit Inventory ----------
+    function saveToolInventory() {
+        localStorage.setItem('tool_inventory_arr', JSON.stringify(toolInventory));
+    }
+
+    function renderToolInventory() {
+        const container = document.getElementById('tool-inventory-container');
+        const emptyMsg = document.getElementById('tool-inventory-empty');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (toolInventory.length === 0) {
+            emptyMsg.style.display = 'block';
+            return;
+        }
+        emptyMsg.style.display = 'none';
+
+        toolInventory.forEach(tool => {
+            const isLow = tool.credits <= 0;
+            const div = document.createElement('div');
+            div.className = `tool-card ${isLow ? 'low-credit' : ''}`;
+            div.innerHTML = `
+                <div class="tool-card-name">${tool.name}</div>
+                <div class="tool-card-balance" style="color:${isLow ? 'var(--accent-red)' : 'var(--accent-green)'}">
+                    ${tool.credits.toLocaleString('en-IN')} CR
+                </div>
+                <div class="tool-card-actions">
+                    <button onclick="topUpTool(${tool.id})">➕ Top Up</button>
+                    <button onclick="removeTool(${tool.id})" style="color:var(--accent-red);">🗑️ Remove</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function addNewTool() {
+        const nameInput = document.getElementById('new-tool-name');
+        const creditsInput = document.getElementById('new-tool-credits');
+        const name = nameInput.value.trim();
+        const credits = parseFloat(creditsInput.value);
+
+        if (!name) {
+            customAlert("Please enter a tool name.");
+            return;
+        }
+        if (isNaN(credits) || credits < 0) {
+            customAlert("Please enter a valid starting credit amount.");
+            return;
+        }
+        if (toolInventory.some(t => t.name.toLowerCase() === name.toLowerCase())) {
+            customAlert("A tool with this name already exists.");
+            return;
+        }
+
+        toolInventory.push({ id: Date.now(), name, credits });
+        saveToolInventory();
+        renderToolInventory();
+        nameInput.value = '';
+        creditsInput.value = '';
+    }
+
+    async function topUpTool(id) {
+        const tool = toolInventory.find(t => t.id === id);
+        if (!tool) return;
+        const amountStr = await customPrompt(`Current balance: ${tool.credits} CR.\nHow many credits to add?`, "0", `➕ Top Up "${tool.name}"`);
+        if (amountStr === null) return;
+        const amount = parseFloat(amountStr);
+        if (isNaN(amount) || amount <= 0) {
+            await customAlert("Please enter a valid positive number.");
+            return;
+        }
+        tool.credits += amount;
+        saveToolInventory();
+        renderToolInventory();
+    }
+
+    async function removeTool(id) {
+        const tool = toolInventory.find(t => t.id === id);
+        if (!tool) return;
+        const ok = await customConfirm(`Remove "${tool.name}" from inventory? This won't affect past job records.`, "🗑️ Remove Tool", true);
+        if (!ok) return;
+        toolInventory = toolInventory.filter(t => t.id !== id);
+        saveToolInventory();
+        renderToolInventory();
+    }
+
+    // ---------- Services linked to Tool Inventory ----------
+    // Only services in this list trigger the tool-usage popup. Everything else logs normally.
+    function getLinkedInventoryServices() {
+        return JSON.parse(localStorage.getItem('inventory_linked_services')) || [];
+    }
+
+    function saveLinkedInventoryServices(list) {
+        localStorage.setItem('inventory_linked_services', JSON.stringify(list));
+    }
+
+    function serviceRequiresInventory(serviceName) {
+        const linked = getLinkedInventoryServices();
+        return linked.some(s => s.toLowerCase() === serviceName.trim().toLowerCase());
+    }
+
+    function renderLinkedServices() {
+        const container = document.getElementById('linked-services-container');
+        const emptyMsg = document.getElementById('linked-services-empty');
+        if (!container) return;
+
+        const linked = getLinkedInventoryServices();
+        container.innerHTML = '';
+
+        if (linked.length === 0) {
+            emptyMsg.style.display = 'block';
+            return;
+        }
+        emptyMsg.style.display = 'none';
+
+        linked.forEach(serviceName => {
+            const chip = document.createElement('div');
+            chip.style.cssText = 'background:var(--bg-color); border:1px solid var(--accent-blue); color:var(--text-main); padding:6px 12px; border-radius:20px; display:flex; align-items:center; gap:8px; font-size:0.85rem;';
+            chip.innerHTML = `<span>${serviceName}</span>`;
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.innerText = '✕';
+            removeBtn.style.cssText = 'background:none; border:none; color:var(--accent-red); cursor:pointer; font-weight:bold; font-size:0.9rem; padding:0;';
+            removeBtn.onclick = () => removeLinkedService(serviceName);
+            chip.appendChild(removeBtn);
+            container.appendChild(chip);
+        });
+    }
+
+    function populateLinkedServiceSuggestions() {
+        const datalist = document.getElementById('linked-service-suggestions');
+        if (!datalist) return;
+        const builtInNames = ['Mi Assistant FRP', 'Vivo', 'SigmaPlus', 'Xiaomi QC Mi Account', 'Xiaomi MTK Mi Account', 'Xiaomi QC FRP', 'Xiaomi MTK FRP', 'Unlocktool Rent', 'Samsung ADB FRP'];
+        const customNames = customServicePresets.map(p => p.label);
+        const allNames = [...new Set([...builtInNames, ...customNames])];
+        datalist.innerHTML = allNames.map(n => `<option value="${n}"></option>`).join('');
+    }
+
+    function addLinkedService() {
+        const input = document.getElementById('new-linked-service');
+        const name = input.value.trim();
+        if (!name) {
+            customAlert("Please enter a service name.");
+            return;
+        }
+        const linked = getLinkedInventoryServices();
+        if (linked.some(s => s.toLowerCase() === name.toLowerCase())) {
+            customAlert("This service is already linked.");
+            return;
+        }
+        linked.push(name);
+        saveLinkedInventoryServices(linked);
+        renderLinkedServices();
+        input.value = '';
+    }
+
+    function removeLinkedService(name) {
+        let linked = getLinkedInventoryServices();
+        linked = linked.filter(s => s.toLowerCase() !== name.toLowerCase());
+        saveLinkedInventoryServices(linked);
+        renderLinkedServices();
+    }
+
+    // ---------- Tool credit usage modal ----------
+    let toolModalResolveCallback = null;
+    let toolModalSelectedId = null;
+    let toolModalTopupOpenId = null;
+
+    function openToolDeductionModal(serviceName, callback) {
+        toolModalResolveCallback = callback;
+        toolModalSelectedId = null;
+        toolModalTopupOpenId = null;
+        document.getElementById('tool-modal-service-name').innerText = `Service: ${serviceName}`;
+        document.getElementById('tool-modal-credits-input').value = 1;
+        document.getElementById('tool-modal-warning').style.display = 'none';
+        renderToolModalList();
+        document.getElementById('tool-modal-overlay').style.display = 'flex';
+    }
+
+    function closeToolModal() {
+        document.getElementById('tool-modal-overlay').style.display = 'none';
+        toolModalResolveCallback = null;
+        toolModalSelectedId = null;
+        toolModalTopupOpenId = null;
+    }
+
+    function renderToolModalList() {
+        const list = document.getElementById('tool-modal-list');
+        if (!list) return;
+        list.innerHTML = '';
+
+        if (toolInventory.length === 0) {
+            list.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">No tools in inventory yet.</div>';
+            return;
+        }
+
+        toolInventory.forEach(tool => {
+            const isSelected = tool.id === toolModalSelectedId;
+            const isLow = tool.credits <= 0;
+            const row = document.createElement('div');
+            row.className = `tool-modal-item ${isSelected ? 'selected' : ''}`;
+            row.onclick = () => selectToolInModal(tool.id);
+
+            const rightControl = (toolModalTopupOpenId === tool.id)
+                ? `<div class="tool-modal-topup-inline" onclick="event.stopPropagation();">
+                       <input type="number" id="topup-input-${tool.id}" min="0" placeholder="CR">
+                       <button type="button" class="tool-modal-topup-btn" onclick="confirmInlineTopup(${tool.id})">Add</button>
+                       <button type="button" class="tool-modal-topup-btn" onclick="toggleInlineTopup(${tool.id})">✕</button>
+                   </div>`
+                : `<button type="button" class="tool-modal-topup-btn" onclick="event.stopPropagation(); toggleInlineTopup(${tool.id})">➕ Top Up</button>`;
+
+            row.innerHTML = `
+                <div class="tool-modal-item-info">
+                    <span class="tool-modal-item-name">${tool.name}</span>
+                    <span class="tool-modal-item-balance" style="color:${isLow ? 'var(--accent-red)' : 'var(--text-muted)'}">${tool.credits} CR left</span>
+                </div>
+            `;
+            const controlWrapper = document.createElement('div');
+            controlWrapper.innerHTML = rightControl;
+            row.appendChild(controlWrapper.firstElementChild);
+            list.appendChild(row);
+        });
+    }
+
+    function selectToolInModal(id) {
+        toolModalSelectedId = id;
+        toolModalTopupOpenId = null;
+        renderToolModalList();
+        updateToolModalWarning();
+    }
+
+    function toggleInlineTopup(id) {
+        toolModalTopupOpenId = (toolModalTopupOpenId === id) ? null : id;
+        renderToolModalList();
+    }
+
+    function confirmInlineTopup(id) {
+        const input = document.getElementById(`topup-input-${id}`);
+        const amount = parseFloat(input.value);
+        if (isNaN(amount) || amount <= 0) {
+            customAlert("Please enter a valid credit amount to top up.");
+            return;
+        }
+        const tool = toolInventory.find(t => t.id === id);
+        if (!tool) return;
+        tool.credits += amount;
+        saveToolInventory();
+        toolModalTopupOpenId = null;
+        renderToolModalList();
+        renderToolInventory();
+        updateToolModalWarning();
+    }
+
+    function updateToolModalWarning() {
+        const warningEl = document.getElementById('tool-modal-warning');
+        if (!warningEl) return;
+        if (toolModalSelectedId === null) {
+            warningEl.style.display = 'none';
+            return;
+        }
+        const tool = toolInventory.find(t => t.id === toolModalSelectedId);
+        const amount = parseFloat(document.getElementById('tool-modal-credits-input').value);
+        if (tool && !isNaN(amount) && amount > tool.credits) {
+            warningEl.innerText = `⚠️ Only ${tool.credits} CR left in "${tool.name}" — this will go negative.`;
+            warningEl.style.display = 'block';
+        } else {
+            warningEl.style.display = 'none';
+        }
+    }
+
+    function skipToolModal() {
+        const callback = toolModalResolveCallback;
+        closeToolModal();
+        if (callback) callback({ toolUsed: null, toolCreditsUsed: 0 });
+    }
+
+    function confirmToolModalDeduction() {
+        if (toolModalSelectedId === null) {
+            customAlert("Please select a tool, or click 'Skip' to log without inventory.");
+            return;
+        }
+        const tool = toolInventory.find(t => t.id === toolModalSelectedId);
+        if (!tool) return;
+
+        const amount = parseFloat(document.getElementById('tool-modal-credits-input').value);
+        if (isNaN(amount) || amount <= 0) {
+            customAlert("Please enter a valid credit amount to deduct.");
+            return;
+        }
+
+        tool.credits -= amount;
+        saveToolInventory();
+        renderToolInventory();
+
+        const callback = toolModalResolveCallback;
+        closeToolModal();
+        if (callback) callback({ toolUsed: tool.name, toolCreditsUsed: amount });
+    }
+
+
+
+    function toggleStatus(id) {
+        repairRecords = repairRecords.map(item => {
+            if(item.id === id) {
+                item.partialPaidAmt = 0;
+                item.charge = item.originalCharge || item.charge;
+                item.status = (item.status === 'PAID') ? 'PENDING' : 'PAID';
+            }
+            return item;
+        });
+        saveState();
+        renderTargetWorkspace();
+    }
+
+    async function triggerInlinePartialPrompt(id) {
+        const item = repairRecords.find(r => r.id === id);
+        if (!item) return;
+
+        const fullCost = item.originalCharge || item.charge;
+        const userInput = await customPrompt(`Total Job Value is ₹${fullCost}.\nEnter how much the customer PAID now:`, item.partialPaidAmt || "0", "💵 Partial Payment");
+
+        if (userInput !== null) {
+            const paidAmt = parseFloat(userInput) || 0;
+            if (paidAmt >= fullCost) {
+                item.status = 'PAID';
+                item.charge = fullCost;
+                item.partialPaidAmt = 0;
+            } else if (paidAmt <= 0) {
+                item.status = 'PENDING';
+                item.charge = fullCost;
+                item.partialPaidAmt = 0;
+            } else {
+                const balanceOwed = fullCost - paidAmt;
+                item.status = 'PENDING';
+                item.originalCharge = fullCost;
+                item.partialPaidAmt = paidAmt;
+                item.charge = balanceOwed;
+            }
+        }
+        saveState();
+        renderTargetWorkspace();
+    }
+
+    async function editEntry(id) {
+        const item = repairRecords.find(r => r.id === id);
+        if (!item) return;
+
+        const newName = await customPrompt("Edit Customer Name:", item.name, "✏️ Edit Entry");
+        if (newName === null) return;
+
+        const newService = await customPrompt("Edit Service / Repair Info:", item.service, "✏️ Edit Entry");
+        if (newService === null) return;
+
+        const fullCost = item.originalCharge || item.charge;
+        const newChargeStr = await customPrompt("Edit Full Service Charge (₹):", fullCost, "✏️ Edit Entry");
+        if (newChargeStr === null) return;
+
+        const newExpenseStr = await customPrompt("Edit Cost Expense (₹):", item.expense, "✏️ Edit Entry");
+        if (newExpenseStr === null) return;
+
+        const newDateStr = await customPrompt("Edit Date (DD-Mon-YYYY, e.g. 20-Jul-2026):", item.date, "✏️ Edit Entry");
+        if (newDateStr === null) return;
+
+        let finalName = newName.trim();
+        if (/^\d+$/.test(finalName)) {
+            finalName = `CUS ${finalName}`;
+        }
+        if (finalName) item.name = finalName;
+
+        const finalService = newService.trim();
+        if (finalService) item.service = finalService;
+
+        const newCharge = parseFloat(newChargeStr) || 0;
+        item.originalCharge = newCharge;
+        item.charge = (item.partialPaidAmt > 0) ? Math.max(newCharge - item.partialPaidAmt, 0) : newCharge;
+
+        item.expense = parseFloat(newExpenseStr) || 0;
+
+        const trimmedDateStr = newDateStr.trim();
+        const newISO = parseDateStringToISO(trimmedDateStr);
+        if (newISO) {
+            item.isoDateStr = newISO;
+            item.date = formatISODateToDisplay(newISO);
+            item.rawMonth = parseInt(newISO.split('-')[1], 10) - 1;
+        }
+
+        saveState();
+        renderTargetWorkspace();
+        customAlert("✅ Entry updated successfully.");
+    }
+
+    async function removeEntry(id) {
+        const ok = await customConfirm("Confirm removal of execution track parameters?", "🗑️ Remove Entry", true);
+        if (ok) {
+            repairRecords = repairRecords.filter(item => item.id !== id);
+            saveState();
+            renderTargetWorkspace();
+        }
+    }
+
+    function renderTargetWorkspace() {
+        const searchQuery = document.getElementById('customer-search-input').value.trim().toLowerCase();
+        const selectedISO = document.getElementById('target-date-input').value;
+        const displaySelectedDate = formatISODateToDisplay(selectedISO);
+        
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+
+        let totalJobsCount = 0;
+        let runningChargeSum = 0;
+        let runningExpenseSum = 0;
+        let runningProfitSum = 0;
+        
+        let filteredRecords = [];
+
+        let totalLifetimeJobs = 0;
+        let totalLifetimePaid = 0;
+        let totalLifetimePending = 0;
+        let totalLifetimeNetValue = 0;
+        let currentClientOfficialName = "";
+
+        if (searchQuery.length > 0) {
+            document.getElementById('registry-table-title').innerText = `🔍 Customer History Registry: "${document.getElementById('customer-search-input').value}"`;
+            document.getElementById('card-title-entries').innerText = "Total Customer Jobs";
+            document.getElementById('card-title-charge').innerText = "Customer Total Paid";
+            document.getElementById('card-title-expense').innerText = "Customer Total Pending";
+            document.getElementById('card-title-profit').innerText = "Customer Net Value";
+            
+            repairRecords.forEach(item => {
+                if (item.name.toLowerCase() === searchQuery) {
+                    filteredRecords.push(item);
+                    totalJobsCount++;
+                    
+                    const fullVal = item.originalCharge || item.charge;
+                    if (item.status === 'PAID') {
+                        runningChargeSum += fullVal;
+                    } else {
+                        if (item.partialPaidAmt > 0) {
+                            runningChargeSum += item.partialPaidAmt;
+                            runningExpenseSum += item.charge; 
+                        } else {
+                            runningExpenseSum += fullVal;
+                        }
+                    }
+                    runningProfitSum += (fullVal - item.expense);
+                }
+            });
+
+            repairRecords.forEach(item => {
+                if (item.name.toLowerCase() === searchQuery) {
+                    if (!currentClientOfficialName) currentClientOfficialName = item.name;
+                    totalLifetimeJobs++;
+                    const fullCost = item.originalCharge || item.charge;
+                    
+                    if (item.status === 'PAID') {
+                        totalLifetimePaid += fullCost;
+                    } else {
+                        if (item.partialPaidAmt > 0) {
+                            totalLifetimePaid += item.partialPaidAmt;
+                            totalLifetimePending += item.charge;
+                        } else {
+                            totalLifetimePending += fullCost;
+                        }
+                    }
+                    totalLifetimeNetValue += (fullCost - item.expense);
+                }
+            });
+
+            if (totalLifetimeJobs > 0) {
+                document.getElementById('cust-profile-panel').style.display = "block";
+                document.getElementById('cust-profile-title').innerText = `👤 Lifetime Profile: ${currentClientOfficialName}`;
+                document.getElementById('cust-lbl-count').innerText = `${totalLifetimeJobs} Jobs Logged`;
+                document.getElementById('cust-lbl-paid').innerText = `₹${totalLifetimePaid.toLocaleString('en-IN')}`;
+                document.getElementById('cust-lbl-pending').innerText = `₹${totalLifetimePending.toLocaleString('en-IN')}`;
+                document.getElementById('cust-lbl-yield').innerText = `₹${totalLifetimeNetValue.toLocaleString('en-IN')}`;
+            } else {
+                document.getElementById('cust-profile-panel').style.display = "none";
+            }
+
+        } else {
+            document.getElementById('cust-profile-panel').style.display = "none";
+
+            document.getElementById('registry-table-title').innerText = `📋 Operation Log Registry (${displaySelectedDate})`;
+            document.getElementById('card-title-entries').innerText = "Selected Day Work Done";
+            document.getElementById('card-title-charge').innerText = "Selected Day Charges";
+            document.getElementById('card-title-expense').innerText = "Selected Day Expenses";
+            document.getElementById('card-title-profit').innerText = "Selected Day Net Profit";
+
+            repairRecords.forEach(item => {
+                let itemISO = item.isoDateStr || parseDateStringToISO(item.date);
+                if (itemISO === selectedISO) {
+                    filteredRecords.push(item);
+                    totalJobsCount++;
+                    
+                    const fullVal = item.originalCharge || item.charge;
+                    if(item.partialPaidAmt > 0) {
+                        runningChargeSum += item.partialPaidAmt; 
+                        runningExpenseSum += item.expense;
+                        runningProfitSum += (item.partialPaidAmt - item.expense);
+                    } else {
+                        runningChargeSum += item.charge;
+                        runningExpenseSum += item.expense;
+                        runningProfitSum += (item.charge - item.expense);
+                    }
+                }
+            });
+        }
+
+        filteredRecords.forEach((item, index) => {
+            const fullCost = item.originalCharge || item.charge;
+            let displayService = item.service;
+            let displayBadgeClass = item.status.toLowerCase();
+            let displayBadgeText = item.status;
+
+            if (item.partialPaidAmt > 0) {
+                displayService += ` <small style="color:var(--accent-gold); display:block;">(Paid ₹${item.partialPaidAmt} / Remainder Pending)</small>`;
+                displayBadgeText = "PARTIAL";
+            }
+            if (item.toolUsed) {
+                displayService += ` <small style="color:var(--accent-blue); display:block;">🧰 ${item.toolUsed} -${item.toolCreditsUsed} CR</small>`;
+            }
+
+            let profitVal = (item.partialPaidAmt > 0) ? (item.partialPaidAmt - item.expense) : (item.charge - item.expense);
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;">${item.date}</td>
+                <td style="font-weight: 600; cursor: pointer; color: var(--accent-blue);" onclick="fillSearchField('${item.name}')" title="Click to view full user statement">${item.name}</td>
+                <td><span style="color: var(--accent-blue);">${displayService}</span></td>
+                <td>₹${item.charge.toLocaleString('en-IN')} <small style="color:var(--text-muted); display:block;">of ₹${fullCost}</small></td>
+                <td>₹${item.expense.toLocaleString('en-IN')}</td>
+                <td style="font-weight: bold; color: ${profitVal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'}">₹${profitVal.toLocaleString('en-IN')}</td>
+                <td><span class="badge ${displayBadgeClass}">${displayBadgeText}</span></td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;">${item.enteredBy || 'Owner'}</td>
+                <td style="white-space:nowrap;">
+                    <button class="btn-action" onclick="toggleStatus(${item.id})" title="Toggle Payment State">🔄</button>
+                    <button class="btn-inline-partial" onclick="triggerInlinePartialPrompt(${item.id})" title="Log Partial Payment Amount">PARTIAL</button>
+                    <button class="btn-action" onclick="editEntry(${item.id})" title="Edit full entry details" style="color:var(--accent-gold); margin-left:8px;">✏️</button>
+                    <button class="btn-action" onclick="printReceipt(${item.id})" title="Print customer receipt" style="margin-left:8px;">🖨️</button>
+                    <button class="btn-action" onclick="removeEntry(${item.id})" title="Delete entry logs" style="color:var(--accent-red); margin-left:8px;">🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('day-stat-entries').innerText = totalJobsCount + (totalJobsCount === 1 ? " Item" : " Items");
+        document.getElementById('day-stat-charge').innerText = '₹' + runningChargeSum.toLocaleString('en-IN');
+        document.getElementById('day-stat-expense').innerText = '₹' + runningExpenseSum.toLocaleString('en-IN');
+        document.getElementById('day-stat-profit').innerText = '₹' + runningProfitSum.toLocaleString('en-IN');
+
+        document.getElementById('no-data-msg').style.display = (filteredRecords.length === 0) ? 'block' : 'none';
+    }
+
+    function fillSearchField(name) {
+        document.getElementById('customer-search-input').value = name;
+        renderTargetWorkspace();
+    }
+
+    // Builds the full pending-payment reminder text for a customer (by exact name match).
+    // Returns null if that customer has no PENDING records.
+    function buildPendingReminderText(customerName) {
+        let matchQueryLower = customerName.toLowerCase();
+        let targetClientOfficialName = "";
+        let pendingJobsList = [];
+        let absoluteGrossTotalPending = 0;
+
+        repairRecords.forEach(item => {
+            if (item.name.toLowerCase() === matchQueryLower) {
+                if (!targetClientOfficialName) {
+                    targetClientOfficialName = item.name;
+                }
+
+                if (item.status === 'PENDING') {
+                    let jobLabel = item.service;
+                    if (item.partialPaidAmt > 0) {
+                        jobLabel += ` (Partially Paid ₹${item.partialPaidAmt})`;
+                    }
+
+                    pendingJobsList.push({
+                        description: jobLabel,
+                        price: item.charge,
+                        date: item.date
+                    });
+                    absoluteGrossTotalPending += item.charge;
+                }
+            }
+        });
+
+        if (pendingJobsList.length === 0) return null;
+
+        let textOutputTemplate = `⚠️ --- FRIENDLY PAYMENT REMINDER ---\n\n`;
+        textOutputTemplate += `Dear ${targetClientOfficialName},\n`;
+        textOutputTemplate += `This is a friendly reminder regarding your pending balance details:\n\n`;
+        textOutputTemplate += `===================================\n`;
+
+        pendingJobsList.forEach((job, index) => {
+            textOutputTemplate += `${index + 1}. ${job.date} Job: ${job.description} -> Pending: ₹${job.price.toLocaleString('en-IN')}\n`;
+        });
+
+        textOutputTemplate += `===================================\n`;
+        textOutputTemplate += `TOTAL PENDING AMOUNT: ₹${absoluteGrossTotalPending.toLocaleString('en-IN')}\n\n`;
+        textOutputTemplate += `Please process the payment at your convenience.\n`;
+        textOutputTemplate += `Thanks for choosing FIXWITHYUVI! 🙏`;
+
+        return textOutputTemplate;
+    }
+
+    function copyTextToClipboard(textToCopy, feedbackBtn) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => triggerSuccessUI(feedbackBtn))
+                .catch(() => fallbackCopyExecution(textToCopy, feedbackBtn));
+        } else {
+            fallbackCopyExecution(textToCopy, feedbackBtn);
+        }
+    }
+
+    function copyPendingJobsToClipboard() {
+        const searchQuery = document.getElementById('customer-search-input').value.trim();
+
+        if (!searchQuery) {
+            customAlert("Please type a customer name in the filter input first to isolate their pending statement.");
+            return;
+        }
+
+        const textOutputTemplate = buildPendingReminderText(searchQuery);
+
+        if (!textOutputTemplate) {
+            customAlert(`No PENDING records found matching "${searchQuery}".`);
+            return;
+        }
+
+        copyTextToClipboard(textOutputTemplate, document.getElementById('share-text-btn'));
+    }
+
+    // Gathers every PENDING job for a customer (by exact name match).
+    // Returns { officialName, jobs, totalPending } or null if nothing pending.
+    function collectPendingJobs(customerName) {
+        let matchQueryLower = customerName.toLowerCase();
+        let officialName = "";
+        let jobs = [];
+        let totalPending = 0;
+
+        repairRecords.forEach(item => {
+            if (item.name.toLowerCase() === matchQueryLower) {
+                if (!officialName) officialName = item.name;
+                if (item.status === 'PENDING') {
+                    let jobLabel = item.service;
+                    if (item.partialPaidAmt > 0) {
+                        jobLabel += ` (Partially Paid ₹${item.partialPaidAmt})`;
+                    }
+                    jobs.push({ description: jobLabel, price: item.charge, date: item.date });
+                    totalPending += item.charge;
+                }
+            }
+        });
+
+        if (jobs.length === 0) return null;
+        return { officialName, jobs, totalPending };
+    }
+
+    // "🖨️ Pending Receipt" button next to "📋 Copy Reminder Text" — prints the
+    // searched customer's FULL pending job list as a single receipt-style document.
+    function printPendingReceipt() {
+        const searchQuery = document.getElementById('customer-search-input').value.trim();
+
+        if (!searchQuery) {
+            customAlert("Please type a customer name in the filter input first to isolate their pending statement.");
+            return;
+        }
+
+        const pendingData = collectPendingJobs(searchQuery);
+
+        if (!pendingData) {
+            customAlert(`No PENDING records found matching "${searchQuery}".`);
+            return;
+        }
+
+        const rowsHTML = pendingData.jobs.map((job, idx) => `
+            <tr>
+                <td>${idx + 1}</td>
+                <td>${job.date}</td>
+                <td>${job.description}</td>
+                <td style="text-align:right;">₹${job.price.toLocaleString('en-IN')}</td>
+            </tr>
+        `).join('');
+
+        const receiptHTML = `
+            <html>
+            <head>
+                <title>Pending Receipt - ${pendingData.officialName}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 30px; color: #111; }
+                    h1 { font-size: 1.4rem; margin-bottom: 0; }
+                    .sub { color: #555; margin-top: 4px; margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                    td, th { padding: 8px 10px; border-bottom: 1px solid #ddd; text-align: left; }
+                    th { color: #555; }
+                    .total-row td { font-weight: bold; border-top: 2px solid #333; text-align:right; }
+                    .footer { margin-top: 30px; text-align: center; color: #555; font-size: 0.9rem; }
+                </style>
+            </head>
+            <body>
+                <h1>FIXWITHYUVI</h1>
+                <div class="sub">Pending Payment Receipt — ${pendingData.officialName}</div>
+                <table>
+                    <thead>
+                        <tr><th>#</th><th>Date</th><th>Job</th><th style="text-align:right;">Pending</th></tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHTML}
+                        <tr class="total-row"><td colspan="3">TOTAL PENDING AMOUNT</td><td>₹${pendingData.totalPending.toLocaleString('en-IN')}</td></tr>
+                    </tbody>
+                </table>
+                <div class="footer">Thanks for choosing FIXWITHYUVI! 🙏</div>
+            </body>
+            </html>
+        `;
+
+        const receiptWindow = window.open('', '_blank', 'width=420,height=600');
+        if (!receiptWindow) {
+            customAlert("Please allow popups for this site to print the receipt.");
+            return;
+        }
+        receiptWindow.document.write(receiptHTML);
+        receiptWindow.document.close();
+        receiptWindow.focus();
+        receiptWindow.print();
+    }
+
+    function fallbackCopyExecution(textToCopy, feedbackBtn) {
+        try {
+            const textArea = document.createElement("textarea");
+            textArea.value = textToCopy;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            textArea.style.opacity = "0";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            if (successful) triggerSuccessUI(feedbackBtn);
+        } catch (err) {
+            customAlert("Security exception copying text.");
+        }
+    }
+
+    function triggerSuccessUI(btnElement) {
+        const targetBtn = btnElement || document.getElementById('share-text-btn');
+        if (!targetBtn) return;
+        const isMainShareButton = targetBtn.id === 'share-text-btn';
+        const originalContent = targetBtn.innerHTML;
+        const originalBg = targetBtn.style.backgroundColor;
+        targetBtn.innerHTML = isMainShareButton ? "✅ Reminder Copied!" : "✅";
+        targetBtn.style.backgroundColor = isMainShareButton ? "var(--accent-green)" : originalBg;
+        setTimeout(() => {
+            targetBtn.innerHTML = originalContent;
+            targetBtn.style.backgroundColor = originalBg;
+        }, 2000);
+    }
+
+    // ---------- Top Customers tab ----------
+    function viewCustomerFromTopList(name) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('entry-tab').classList.add('active');
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        fillSearchField(name);
+    }
+
+    function renderTopCustomers() {
+        const monthSelect = document.getElementById('top-cust-month-select');
+        const selectedMonth = monthSelect ? monthSelect.value : 'all';
+
+        let scopedRecords = repairRecords;
+        if (selectedMonth !== 'all') {
+            const monthIdx = parseInt(selectedMonth, 10);
+            scopedRecords = repairRecords.filter(item => {
+                let mIndex = item.rawMonth;
+                if (mIndex === undefined) {
+                    let itemISO = item.isoDateStr || parseDateStringToISO(item.date);
+                    if (itemISO) mIndex = new Date(itemISO.split('-')[0], itemISO.split('-')[1] - 1, itemISO.split('-')[2]).getMonth();
+                }
+                return mIndex === monthIdx;
+            });
+        }
+
+        const custMap = {};
+        scopedRecords.forEach(item => {
+            if (!custMap[item.name]) {
+                custMap[item.name] = { name: item.name, jobs: 0, totalCharged: 0, totalPending: 0 };
+            }
+            custMap[item.name].jobs++;
+            custMap[item.name].totalCharged += (item.originalCharge || item.charge);
+            if (item.status === 'PENDING') {
+                custMap[item.name].totalPending += item.charge;
+            }
+        });
+
+        const sortedCustomers = Object.values(custMap)
+            .sort((a, b) => b.jobs - a.jobs)
+            .slice(0, 20);
+
+        const tbody = document.getElementById('top-customers-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        sortedCustomers.forEach((c, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${idx + 1}</td>
+                <td style="font-weight: 600; cursor: pointer; color: var(--accent-blue);" onclick="viewCustomerFromTopList('${c.name}')" title="Click to view full statement">${c.name}</td>
+                <td>${c.jobs}</td>
+                <td>₹${c.totalCharged.toLocaleString('en-IN')}</td>
+                <td style="color:${c.totalPending > 0 ? 'var(--accent-gold)' : 'var(--text-muted)'}">₹${c.totalPending.toLocaleString('en-IN')}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('top-customers-empty').style.display = (sortedCustomers.length === 0) ? 'block' : 'none';
+    }
+
+    function calculateMonthlyReports() {
+        let monthlyStats = Array.from({ length: 12 }, (_, i) => ({
+            name: monthNamesArr[i], done: 0, charge: 0, expense: 0, profit: 0
+        }));
+
+        repairRecords.forEach(item => {
+            let mIndex = item.rawMonth;
+            if(mIndex === undefined) {
+                let itemISO = item.isoDateStr || parseDateStringToISO(item.date);
+                if(itemISO) mIndex = new Date(itemISO.split('-')[0], itemISO.split('-')[1] - 1, itemISO.split('-')[2]).getMonth();
+            }
+            if(mIndex !== undefined && mIndex >= 0 && mIndex < 12) {
+                monthlyStats[mIndex].done++;
+                
+                const fullVal = item.originalCharge || item.charge;
+                if(item.partialPaidAmt > 0) {
+                    monthlyStats[mIndex].charge += item.partialPaidAmt;
+                    monthlyStats[mIndex].profit += (item.partialPaidAmt - item.expense);
+                } else {
+                    monthlyStats[mIndex].charge += item.charge;
+                    monthlyStats[mIndex].profit += (item.charge - item.expense);
+                }
+                monthlyStats[mIndex].expense += item.expense;
+            }
+        });
+
+        let highestProfit = -Infinity;
+        let topMonthName = "No active data logs loaded.";
+        let topMonthIdx = -1;
+
+        monthlyStats.forEach((m, idx) => {
+            if(m.done > 0 && m.profit > highestProfit) {
+                highestProfit = m.profit;
+                topMonthName = `${m.name} Desk Matrix (Total Profit: ₹${m.profit.toLocaleString('en-IN')})`;
+                topMonthIdx = idx;
+            }
+        });
+        document.getElementById('top-month-value').innerText = topMonthName;
+
+        const monthContainer = document.getElementById('monthly-analytics-container');
+        monthContainer.innerHTML = '';
+
+        monthlyStats.forEach((m, idx) => {
+            const isTop = (idx === topMonthIdx);
+            
+            let marginPercent = 0;
+            if(m.charge > 0 && m.profit > 0) {
+                marginPercent = Math.min(100, Math.round((m.profit / m.charge) * 100));
+            }
+
+            const div = document.createElement('div');
+            div.className = `month-row ${isTop ? 'top-performing' : ''}`;
+            div.innerHTML = `
+                <div class="month-name">${m.name}</div>
+                <div class="month-stat"><span>Jobs Finished:</span><span>${m.done}</span></div>
+                <div class="month-stat"><span>Gross Income:</span><span>₹${m.charge.toLocaleString('en-IN')}</span></div>
+                <div class="month-stat"><span>Costs/Expenses:</span><span>₹${m.expense.toLocaleString('en-IN')}</span></div>
+                <div class="month-stat" style="border-top: 1px dashed var(--border-color); padding-top:5px; margin-top:5px; font-weight:bold;">
+                    <span>Calculated Profit:</span>
+                    <span style="color:${m.profit >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'}">₹${m.profit.toLocaleString('en-IN')}</span>
+                </div>
+                <div class="month-stat" style="font-size:0.75rem; color:var(--text-muted); margin-top:5px;">
+                    <span>Profit Margin Ratio:</span><span>${marginPercent}%</span>
+                </div>
+                <div class="margin-progress-container">
+                    <div class="margin-progress-bar" style="width: ${marginPercent}%; background-color: ${marginPercent > 50 ? 'var(--accent-green)' : 'var(--accent-gold)'}"></div>
+                </div>
+            `;
+            monthContainer.appendChild(div);
+        });
+    }
+
+    function exportDataJSON() {
+        if(repairRecords.length === 0) return customAlert("Nothing to export.");
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(repairRecords, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `Advanced_Hub_Backup_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function importDataJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const parsedData = JSON.parse(e.target.result);
+                if (Array.isArray(parsedData)) {
+                    const ok = await customConfirm(`Found ${parsedData.length} entries. Overwrite workspace?`, "📥 Import Backup", false, "Overwrite");
+                    if (ok) {
+                        repairRecords = parsedData;
+                        saveState();
+                        handleDateChange();
+                        await customAlert("Database imported successfully!", "✅ Import Complete");
+                    }
+                }
+            } catch (err) { customAlert("Error parsing file."); }
+        };
+        reader.readAsText(file);
+        event.target.value = ''; 
+    }
+</script>
+</body>
+</html>
