@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Automation Work Hub</title>
+    <title>FixWithYuvi Ledger</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -1066,6 +1066,22 @@
             font-size: 0.8rem;
         }
 
+        th.sortable-th {
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            transition: color 0.15s;
+        }
+        th.sortable-th:hover {
+            color: var(--accent-blue);
+        }
+        .sort-arrow {
+            font-size: 0.7rem;
+            opacity: 0.4;
+            margin-left: 3px;
+            display: inline-block;
+        }
+
         .badge {
             padding: 4px 8px;
             border-radius: 4px;
@@ -1248,7 +1264,7 @@
 <div class="container">
     <header>
         <div>
-            <h1>Automation Work Hub</h1>
+            <h1 id="app-name-heading">FixWithYuvi Ledger</h1>
             <p style="margin:5px 0 0 0; color:var(--text-muted);">Unified Multi-Tab Work Desk & Operations Ledger</p>
         </div>
         <div class="settings-menu-wrapper">
@@ -1259,6 +1275,7 @@
                 <input type="file" id="import-file" accept=".json" onchange="importDataJSON(event)">
                 <button class="settings-item hide-in-entry-mode" id="cloud-sync-btn" onclick="openSyncModal(); closeSettingsMenu();">☁️ Cloud Sync</button>
                 <button class="settings-item hide-in-entry-mode" onclick="manageStaffAndPins(); closeSettingsMenu();">👥 Manage Staff & PINs</button>
+                <button class="settings-item hide-in-entry-mode" onclick="editAppNamePrompt(); closeSettingsMenu();">✏️ Edit App Name</button>
                 <div class="settings-divider hide-in-entry-mode"></div>
                 <button class="settings-item btn-lock-mode" id="entry-mode-toggle-btn" onclick="toggleEntryOnlyMode(); closeSettingsMenu();">🔒 Staff Entry Mode</button>
             </div>
@@ -1461,13 +1478,13 @@
                 <thead>
                     <tr>
                         <th>Index</th>
-                        <th>Date</th>
-                        <th>Customer Target</th>
-                        <th>Applied Service Info</th>
-                        <th>Gross Charge</th>
-                        <th>Expenses</th>
-                        <th>Net Profit</th>
-                        <th>Payment Status</th>
+                        <th class="sortable-th" onclick="sortRegistryTable('date')">Date <span class="sort-arrow" id="sort-arrow-date">↕</span></th>
+                        <th class="sortable-th" onclick="sortRegistryTable('name')">Customer Target <span class="sort-arrow" id="sort-arrow-name">↕</span></th>
+                        <th class="sortable-th" onclick="sortRegistryTable('service')">Applied Service Info <span class="sort-arrow" id="sort-arrow-service">↕</span></th>
+                        <th class="sortable-th" onclick="sortRegistryTable('charge')">Gross Charge <span class="sort-arrow" id="sort-arrow-charge">↕</span></th>
+                        <th class="sortable-th" onclick="sortRegistryTable('expense')">Expenses <span class="sort-arrow" id="sort-arrow-expense">↕</span></th>
+                        <th class="sortable-th" onclick="sortRegistryTable('profit')">Net Profit <span class="sort-arrow" id="sort-arrow-profit">↕</span></th>
+                        <th class="sortable-th" onclick="sortRegistryTable('status')">Payment Status <span class="sort-arrow" id="sort-arrow-status">↕</span></th>
                         <th>Staff</th>
                         <th>Action Matrix</th>
                     </tr>
@@ -1529,10 +1546,10 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Date</th>
-                        <th>Customer</th>
-                        <th>Service</th>
-                        <th>Pending Amount</th>
+                        <th class="sortable-th" onclick="sortPendingTable('date')">Date <span class="sort-arrow" id="sort-arrow-pending-date">↕</span></th>
+                        <th class="sortable-th" onclick="sortPendingTable('name')">Customer <span class="sort-arrow" id="sort-arrow-pending-name">↕</span></th>
+                        <th class="sortable-th" onclick="sortPendingTable('service')">Service <span class="sort-arrow" id="sort-arrow-pending-service">↕</span></th>
+                        <th class="sortable-th" onclick="sortPendingTable('charge')">Pending Amount <span class="sort-arrow" id="sort-arrow-pending-charge">↕</span></th>
                         <th>Status</th>
                         <th>Action Matrix</th>
                     </tr>
@@ -1683,7 +1700,7 @@
 <div id="sync-modal-overlay" class="modal-overlay" style="display:none;" onmousedown="if(event.target===this) closeSyncModal();">
     <div class="modal-box" style="width:420px;">
         <div class="modal-title">☁️ Cloud Sync (GitHub)</div>
-        <div class="modal-sub">Paste your token — everything else (repo, syncing) happens automatically.</div>
+        <div class="modal-sub">Paste your token — everything else (repo, syncing) happens automatically. Syncs job records, presets, tool inventory, staff & app name — everything.</div>
 
         <div class="sync-form-group">
             <label for="sync-token-input">Personal Access Token</label>
@@ -1889,6 +1906,102 @@
     });
 
     let repairRecords = JSON.parse(localStorage.getItem('tabbed_repair_logs')) || [];
+
+    // ---------- Operation Log Registry: column sorting ----------
+    let registrySortColumn = null;
+    let registrySortDir = 'asc';
+
+    function getItemProfit(item) {
+        return (item.partialPaidAmt > 0) ? (item.partialPaidAmt - item.expense) : (item.charge - item.expense);
+    }
+
+    function sortRegistryTable(column) {
+        if (registrySortColumn === column) {
+            registrySortDir = (registrySortDir === 'asc') ? 'desc' : 'asc';
+        } else {
+            registrySortColumn = column;
+            registrySortDir = 'asc';
+        }
+        renderTargetWorkspace();
+    }
+
+    function applyRegistrySort(records) {
+        if (!registrySortColumn) return records;
+        const dir = registrySortDir === 'asc' ? 1 : -1;
+        const sorted = [...records];
+        sorted.sort((a, b) => {
+            let av, bv;
+            switch (registrySortColumn) {
+                case 'date':
+                    av = a.isoDateStr || parseDateStringToISO(a.date) || '';
+                    bv = b.isoDateStr || parseDateStringToISO(b.date) || '';
+                    break;
+                case 'name':
+                    av = (a.name || '').toLowerCase();
+                    bv = (b.name || '').toLowerCase();
+                    break;
+                case 'service':
+                    av = (a.service || '').toLowerCase();
+                    bv = (b.service || '').toLowerCase();
+                    break;
+                case 'charge':
+                    av = a.charge || 0;
+                    bv = b.charge || 0;
+                    break;
+                case 'expense':
+                    av = a.expense || 0;
+                    bv = b.expense || 0;
+                    break;
+                case 'profit':
+                    av = getItemProfit(a);
+                    bv = getItemProfit(b);
+                    break;
+                case 'status':
+                    av = (a.status || '').toLowerCase();
+                    bv = (b.status || '').toLowerCase();
+                    break;
+                default:
+                    return 0;
+            }
+            if (av < bv) return -1 * dir;
+            if (av > bv) return 1 * dir;
+            return 0;
+        });
+        return sorted;
+    }
+
+    function updateSortArrowIcons() {
+        document.querySelectorAll('.sort-arrow').forEach(el => {
+            el.innerText = '↕';
+            el.style.opacity = '0.4';
+        });
+        if (registrySortColumn) {
+            const activeEl = document.getElementById('sort-arrow-' + registrySortColumn);
+            if (activeEl) {
+                activeEl.innerText = registrySortDir === 'asc' ? '▲' : '▼';
+                activeEl.style.opacity = '1';
+            }
+        }
+    }
+
+    const DEFAULT_APP_NAME = 'FixWithYuvi Ledger';
+    let currentAppName = localStorage.getItem('custom_app_name') || DEFAULT_APP_NAME;
+    document.title = currentAppName;
+    (function applySavedAppName() {
+        const heading = document.getElementById('app-name-heading');
+        if (heading) heading.innerText = currentAppName;
+    })();
+
+    async function editAppNamePrompt() {
+        const newName = await customPrompt("Enter a new name for this app:", currentAppName, "✏️ Edit App Name");
+        if (!newName || !newName.trim()) return;
+        currentAppName = newName.trim();
+        localStorage.setItem('custom_app_name', currentAppName);
+        document.title = currentAppName;
+        const heading = document.getElementById('app-name-heading');
+        if (heading) heading.innerText = currentAppName;
+    }
+
     const DEFAULT_SERVICE_PRESETS = [
         { label: 'Mi Assistant FRP', charge: 350, expense: 300 },
         { label: 'Vivo', charge: 2000, expense: 1700 },
@@ -2302,8 +2415,69 @@
         });
     }
 
+    let pendingSortColumn = null;
+    let pendingSortDir = 'asc';
+
+    function sortPendingTable(column) {
+        if (pendingSortColumn === column) {
+            pendingSortDir = (pendingSortDir === 'asc') ? 'desc' : 'asc';
+        } else {
+            pendingSortColumn = column;
+            pendingSortDir = 'asc';
+        }
+        renderPendingTable();
+    }
+
+    function applyPendingSort(records) {
+        if (!pendingSortColumn) return records;
+        const dir = pendingSortDir === 'asc' ? 1 : -1;
+        const sorted = [...records];
+        sorted.sort((a, b) => {
+            let av, bv;
+            switch (pendingSortColumn) {
+                case 'date':
+                    av = a.isoDateStr || parseDateStringToISO(a.date) || '';
+                    bv = b.isoDateStr || parseDateStringToISO(b.date) || '';
+                    break;
+                case 'name':
+                    av = (a.name || '').toLowerCase();
+                    bv = (b.name || '').toLowerCase();
+                    break;
+                case 'service':
+                    av = (a.service || '').toLowerCase();
+                    bv = (b.service || '').toLowerCase();
+                    break;
+                case 'charge':
+                    av = a.charge || 0;
+                    bv = b.charge || 0;
+                    break;
+                default:
+                    return 0;
+            }
+            if (av < bv) return -1 * dir;
+            if (av > bv) return 1 * dir;
+            return 0;
+        });
+        return sorted;
+    }
+
+    function updatePendingSortArrowIcons() {
+        ['date', 'name', 'service', 'charge'].forEach(col => {
+            const el = document.getElementById('sort-arrow-pending-' + col);
+            if (el) { el.innerText = '↕'; el.style.opacity = '0.4'; }
+        });
+        if (pendingSortColumn) {
+            const activeEl = document.getElementById('sort-arrow-pending-' + pendingSortColumn);
+            if (activeEl) {
+                activeEl.innerText = pendingSortDir === 'asc' ? '▲' : '▼';
+                activeEl.style.opacity = '1';
+            }
+        }
+    }
+
     function renderPendingTable() {
-        const allFiltered = getFilteredPendingRecords();
+        const allFiltered = applyPendingSort(getFilteredPendingRecords());
+        updatePendingSortArrowIcons();
         const searchQuery = (document.getElementById('pending-search-input').value || '').trim();
 
         const grandTotal = allFiltered.reduce((sum, item) => sum + item.charge, 0);
@@ -2787,7 +2961,7 @@
                         name: AUTO_SYNC_REPO_NAME,
                         private: true,
                         auto_init: true,
-                        description: 'Automation Work Hub — cloud data storage'
+                        description: 'FixWithYuvi Ledger — cloud data storage'
                     })
                 });
                 if (!createRes.ok) {
@@ -2848,6 +3022,60 @@
         return res.json();
     }
 
+    // Gathers every piece of app data that should travel with cloud sync.
+    // Excludes device-only state (active staff session, staff-entry-mode toggle) and the sync token itself.
+    function collectAllAppData() {
+        return {
+            __syncFormatVersion: 2,
+            repairRecords: JSON.parse(localStorage.getItem('tabbed_repair_logs') || '[]'),
+            customServicePresets: JSON.parse(localStorage.getItem('custom_services_arr') || '[]'),
+            customCustomerPresets: JSON.parse(localStorage.getItem('custom_customers_arr') || '[]'),
+            toolInventory: JSON.parse(localStorage.getItem('tool_inventory_arr') || '[]'),
+            linkedServices: JSON.parse(localStorage.getItem('inventory_linked_services') || '[]'),
+            staffList: JSON.parse(localStorage.getItem('shop_staff_list') || '[]'),
+            ownerPin: localStorage.getItem('shop_owner_pin') || null,
+            appName: localStorage.getItem('custom_app_name') || null
+        };
+    }
+
+    // Writes a full data bundle (from collectAllAppData, pulled from the cloud) back into
+    // localStorage + live in-memory variables, then refreshes every affected view.
+    function applyAllAppData(data) {
+        repairRecords = Array.isArray(data.repairRecords) ? data.repairRecords : [];
+        localStorage.setItem('tabbed_repair_logs', JSON.stringify(repairRecords));
+
+        customServicePresets = Array.isArray(data.customServicePresets) ? data.customServicePresets : [];
+        localStorage.setItem('custom_services_arr', JSON.stringify(customServicePresets));
+
+        customCustomerPresets = Array.isArray(data.customCustomerPresets) ? data.customCustomerPresets : [];
+        localStorage.setItem('custom_customers_arr', JSON.stringify(customCustomerPresets));
+
+        toolInventory = Array.isArray(data.toolInventory) ? data.toolInventory : [];
+        localStorage.setItem('tool_inventory_arr', JSON.stringify(toolInventory));
+
+        localStorage.setItem('inventory_linked_services', JSON.stringify(Array.isArray(data.linkedServices) ? data.linkedServices : []));
+
+        saveStaffList(Array.isArray(data.staffList) ? data.staffList : []);
+
+        if (data.ownerPin) localStorage.setItem('shop_owner_pin', data.ownerPin);
+
+        if (data.appName) {
+            currentAppName = data.appName;
+            localStorage.setItem('custom_app_name', currentAppName);
+            document.title = currentAppName;
+            const heading = document.getElementById('app-name-heading');
+            if (heading) heading.innerText = currentAppName;
+        }
+
+        // Refresh every view that depends on this data
+        renderCustomServicePresets();
+        renderCustomCustomerPresets();
+        if (typeof renderToolInventory === 'function') renderToolInventory();
+        if (typeof renderLinkedServices === 'function') renderLinkedServices();
+        if (typeof populateLinkedServiceSuggestions === 'function') populateLinkedServiceSuggestions();
+        handleDateChange();
+    }
+
     async function pushToCloud(silent = false) {
         const cfg = getSyncConfig();
         if (!cfg || !cfg.token || !cfg.repo) {
@@ -2857,7 +3085,8 @@
         if (!silent) setSyncStatus('Pushing to GitHub…');
         try {
             const existing = await ghGetFile(cfg);
-            const content = b64EncodeUnicode(JSON.stringify(repairRecords, null, 2));
+            const bundle = collectAllAppData();
+            const content = b64EncodeUnicode(JSON.stringify(bundle, null, 2));
             const putRes = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path.split('/').map(encodeURIComponent).join('/')}`, {
                 method: 'PUT',
                 headers: { 'Authorization': `token ${cfg.token}`, 'Accept': 'application/vnd.github+json' },
@@ -2873,7 +3102,7 @@
                 throw new Error(body.message || `GitHub error ${putRes.status}`);
             }
             localStorage.setItem('gh_sync_last', new Date().toISOString());
-            if (!silent) setSyncStatus(`✅ Pushed ${repairRecords.length} records at ${new Date().toLocaleTimeString()}`);
+            if (!silent) setSyncStatus(`✅ Pushed ${bundle.repairRecords.length} records + presets/inventory/staff at ${new Date().toLocaleTimeString()}`);
         } catch (err) {
             if (!silent) setSyncStatus(`❌ Push failed: ${err.message}`, true);
         }
@@ -2894,18 +3123,31 @@
             }
             const decoded = b64DecodeUnicode(file.content);
             const parsed = JSON.parse(decoded);
-            if (!Array.isArray(parsed)) throw new Error('Cloud file is not valid records data.');
+
+            // Back-compat: older pushes stored a bare array of just job records.
+            const isFullBundle = parsed && !Array.isArray(parsed) && parsed.__syncFormatVersion;
+            const recordCount = isFullBundle ? (parsed.repairRecords || []).length : (Array.isArray(parsed) ? parsed.length : 0);
 
             if (!silent) {
-                const ok = await customConfirm(`Found ${parsed.length} records in cloud (local has ${repairRecords.length}). Overwrite local data with cloud version?`, '☁️ Pull from Cloud', false, 'Overwrite Local');
+                const msg = isFullBundle
+                    ? `Found ${recordCount} records in cloud (plus presets/inventory/staff). This will overwrite ALL local data with the cloud version. Continue?`
+                    : `Found ${recordCount} records in cloud (local has ${repairRecords.length}). Overwrite local data with cloud version?`;
+                const ok = await customConfirm(msg, '☁️ Pull from Cloud', false, 'Overwrite Local');
                 if (!ok) { setSyncStatus('Pull cancelled.'); return; }
             }
 
-            repairRecords = parsed;
-            localStorage.setItem('tabbed_repair_logs', JSON.stringify(repairRecords));
-            handleDateChange();
+            if (isFullBundle) {
+                applyAllAppData(parsed);
+            } else if (Array.isArray(parsed)) {
+                repairRecords = parsed;
+                localStorage.setItem('tabbed_repair_logs', JSON.stringify(repairRecords));
+                handleDateChange();
+            } else {
+                throw new Error('Cloud file is not valid sync data.');
+            }
+
             localStorage.setItem('gh_sync_last', new Date().toISOString());
-            if (!silent) setSyncStatus(`✅ Pulled ${parsed.length} records at ${new Date().toLocaleTimeString()}`);
+            if (!silent) setSyncStatus(`✅ Pulled ${recordCount} records${isFullBundle ? ' + all app data' : ''} at ${new Date().toLocaleTimeString()}`);
         } catch (err) {
             if (!silent) setSyncStatus(`❌ Pull failed: ${err.message}`, true);
         }
@@ -3503,6 +3745,9 @@
                 }
             });
         }
+
+        filteredRecords = applyRegistrySort(filteredRecords);
+        updateSortArrowIcons();
 
         filteredRecords.forEach((item, index) => {
             const fullCost = item.originalCharge || item.charge;
