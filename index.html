@@ -3160,15 +3160,33 @@
     }
 
     let __autoPushTimer = null;
+    let __autoPushInFlight = false;
+    let __autoPushDirtyDuringFlight = false;
+
     function maybeAutoPush() {
         const cfg = getSyncConfig();
         if (!cfg || !cfg.autoPush || !cfg.token || !cfg.repo) return;
+
+        // A push is currently uploading to GitHub — don't start a second one in parallel,
+        // that's what was causing multi-entry syncs to silently fail (stale file-version conflict).
+        // Just remember there's more to send, and it'll go out right after this one finishes.
+        if (__autoPushInFlight) {
+            __autoPushDirtyDuringFlight = true;
+            return;
+        }
         // A push is already scheduled — let it fire and pick up all changes made since,
         // instead of pushing the deadline back every time (which was the "slow" feeling).
         if (__autoPushTimer) return;
-        __autoPushTimer = setTimeout(() => {
+
+        __autoPushTimer = setTimeout(async () => {
             __autoPushTimer = null;
-            pushToCloud();
+            __autoPushInFlight = true;
+            await pushToCloud();
+            __autoPushInFlight = false;
+            if (__autoPushDirtyDuringFlight) {
+                __autoPushDirtyDuringFlight = false;
+                maybeAutoPush();
+            }
         }, 400);
     }
 
