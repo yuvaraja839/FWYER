@@ -459,6 +459,36 @@
             color: #000;
         }
 
+        .preset-item-wrap {
+            display: inline-flex;
+            align-items: stretch;
+            gap: 0;
+        }
+        .preset-item-wrap .btn-preset {
+            border-radius: 4px 0 0 4px;
+        }
+        .btn-preset-edit, .btn-preset-del {
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            border-left: none;
+            background-color: rgba(148, 163, 184, 0.08);
+            color: var(--text-muted);
+            padding: 6px 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-preset-edit:hover {
+            background-color: var(--accent-gold);
+            color: #000;
+        }
+        .btn-preset-del {
+            border-radius: 0 4px 4px 0;
+        }
+        .btn-preset-del:hover {
+            background-color: var(--accent-red);
+            color: #000;
+        }
+
         .cust-presets-wrapper {
             display: flex;
             gap: 6px;
@@ -1079,6 +1109,121 @@
             font-style: italic;
         }
 
+        /* ---- Pending Tab ---- */
+        .pending-summary-bar {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin-bottom: 18px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .pending-summary-bar strong { color: var(--accent-gold); }
+
+        .highly-pending-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .highly-pending-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-gold);
+            border-radius: 8px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .highly-pending-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-2px);
+        }
+        .highly-pending-card.rank-1 { border-left-color: var(--accent-red); }
+        .highly-pending-card.active-filter {
+            background-color: rgba(251, 191, 36, 0.12);
+            border-color: var(--accent-gold);
+        }
+        .highly-pending-rank {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .highly-pending-name {
+            font-weight: 700;
+            font-size: 1rem;
+            margin: 4px 0 6px;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .highly-pending-amt {
+            color: var(--accent-gold);
+            font-weight: 800;
+            font-size: 1.05rem;
+        }
+        .highly-pending-jobs {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            margin-left: 6px;
+        }
+
+        .pending-customer-link {
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--accent-blue);
+        }
+        .pending-customer-link:hover { text-decoration: underline; }
+
+        .pending-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 16px 10px;
+        }
+        .btn-page-nav {
+            background-color: #475569;
+            color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 7px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .btn-page-nav:hover:not(:disabled) { background-color: #64748b; }
+        .btn-page-nav:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .pending-page-indicator {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .btn-clear-pending-filter {
+            background-color: transparent;
+            color: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+            padding: 8px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+        .btn-clear-pending-filter:hover {
+            background-color: rgba(56, 189, 248, 0.12);
+        }
+
         .top-month-banner {
             background: linear-gradient(90deg, #1e1b4b 0%, #311042 100%);
             border: 1px solid #4338ca;
@@ -1124,6 +1269,7 @@
 
     <div class="tabs-nav hide-in-entry-mode">
         <button class="tab-btn active" onclick="switchTab('entry-tab', this)">🛠️ New Operations Desk</button>
+        <button class="tab-btn" onclick="switchTab('pending-tab', this); renderPendingTab();">⚠️ Pending</button>
         <button class="tab-btn" onclick="switchTab('report-tab', this); calculateMonthlyReports();">📈 Monthly Business Report</button>
         <button class="tab-btn" onclick="switchTab('customers-tab', this); renderTopCustomers();">🏆 Top Customers</button>
         <button class="tab-btn" onclick="switchTab('inventory-tab', this); renderToolInventory(); renderLinkedServices(); populateLinkedServiceSuggestions();">🧰 Tool Inventory</button>
@@ -1131,18 +1277,9 @@
 
     <!-- TAB 1: DATA ENTRY -->
     <div id="entry-tab" class="tab-content active">
-        
-        <div class="control-panel-grid">
-            <div class="search-filter-panel hide-in-entry-mode">
-                <div class="panel-group">
-                    <label for="customer-search-input">🔍 Find Customer:</label>
-                    <input type="text" id="customer-search-input" placeholder="Type customer name to filter..." oninput="renderTargetWorkspace()">
-                </div>
-                <button class="btn-share-text" id="share-text-btn" onclick="copyPendingJobsToClipboard()">📋 Copy Reminder Text</button>
-                <button class="btn-share-text" id="pending-receipt-btn" onclick="printPendingReceipt()" style="background-color:#475569; color:#fff;" title="Pending Receipt">🖨️</button>
-                <button class="btn-share-text" id="all-pending-btn" onclick="showAllPendingModal()" style="background-color:var(--accent-gold); color:#1e293b;">⚠️ All Pending (All Customers)</button>
-            </div>
+        <input type="text" id="customer-search-input" style="display:none;" oninput="renderTargetWorkspace()">
 
+        <div class="control-panel-grid">
             <div class="date-picker-panel">
                 <div class="panel-group">
                     <label for="target-date-input" title="Management Date">📅</label>
@@ -1174,7 +1311,10 @@
         </div>
 
         <div class="customer-summary-panel hide-in-entry-mode" id="cust-profile-panel">
-            <div class="customer-summary-title" id="cust-profile-title">Customer History Profile</div>
+            <div class="customer-summary-title" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <span id="cust-profile-title">Customer History Profile</span>
+                <button class="btn-clear-pending-filter" style="font-size:0.75rem; padding:5px 10px;" onclick="document.getElementById('customer-search-input').value=''; renderTargetWorkspace();">✖ Back to Today</button>
+            </div>
             <div class="customer-summary-metrics">
                 <div class="metric-block">
                     <span class="m-lbl">Total Work Logs</span>
@@ -1257,17 +1397,8 @@
             <!-- Service Quick Presets Container -->
             <div class="presets-container" id="service-presets-holder">
                 <span class="preset-lbl">⚡ Service Presets:</span>
-                <button type="button" class="btn-preset" onclick="applyPreset('Mi Assistant FRP', 350, 300)">Mi Assistant FRP</button>
-                <button type="button" class="btn-preset" onclick="applyPreset('Vivo', 2000, 1700)">Vivo</button>
-                <button type="button" class="btn-preset" onclick="applyPreset('SigmaPlus', 200, 0)">SigmaPlus</button>
-                <button type="button" class="btn-preset" onclick="applyPreset('Xiaomi QC Mi Account', 500, 250)">Xiaomi QC Mi Account</button>
-                <button type="button" class="btn-preset" onclick="applyPreset('Xiaomi MTK Mi Account', 500, 250)">Xiaomi MTK Mi Account</button>
-                <button type="button" class="btn-preset" onclick="applyPreset('Xiaomi QC FRP', 350, 250)">Xiaomi QC FRP</button>
-                <button type="button" class="btn-preset" onclick="applyPreset('Xiaomi MTK FRP', 350, 250)">Xiaomi MTK FRP</button>
-                <button type="button" class="btn-preset" onclick="applyPreset('Unlocktool Rent', 60, 32)">Unlocktool Rent</button>
-                <button type="button" class="btn-preset" onclick="applyPreset('Samsung ADB FRP', 250, 0)">Samsung ADB FRP</button>
-                
                 <button type="button" class="btn-add-custom" onclick="addNewServicePresetPrompt()">+ Add Service Preset</button>
+                <button type="button" class="btn-add-custom" style="border-color:var(--accent-gold); color:var(--accent-gold); background-color:rgba(251,191,36,0.12);" onclick="openServicePresetsModal()">✏️ Edit Presets</button>
             </div>
 
             <form id="job-form" onsubmit="addEntry(event)">
@@ -1344,6 +1475,77 @@
                 <tbody id="table-body"></tbody>
             </table>
             <div id="no-data-msg" class="empty-state" style="display: none;">No records matched the active filter parameters.</div>
+        </div>
+    </div>
+
+    <!-- TAB: PENDING -->
+    <div id="pending-tab" class="tab-content">
+
+        <div class="control-panel-grid" style="margin-bottom:16px;">
+            <div class="search-filter-panel">
+                <div class="panel-group">
+                    <label for="pending-search-input">🔍 Find Customer:</label>
+                    <input type="text" id="pending-search-input" placeholder="Type customer name to filter pending..." oninput="renderPendingTab()">
+                </div>
+                <button class="btn-clear-pending-filter" onclick="clearPendingFilter()">✖ Clear Filter</button>
+            </div>
+
+            <div class="date-picker-panel">
+                <div class="panel-group">
+                    <label for="pending-month-select">📅 Month:</label>
+                    <select id="pending-month-select" onchange="renderPendingTab()">
+                        <option value="all">All Months (Full Year)</option>
+                        <option value="0">January</option>
+                        <option value="1">February</option>
+                        <option value="2">March</option>
+                        <option value="3">April</option>
+                        <option value="4">May</option>
+                        <option value="5">June</option>
+                        <option value="6">July</option>
+                        <option value="7">August</option>
+                        <option value="8">September</option>
+                        <option value="9">October</option>
+                        <option value="10">November</option>
+                        <option value="11">December</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="search-filter-panel">
+                <button class="btn-share-text" id="pending-tab-share-btn" onclick="copyPendingReminderFromTab()">📋 Copy Reminder Text</button>
+                <button class="btn-share-text" id="pending-tab-receipt-btn" onclick="printPendingReceiptFromTab()" style="background-color:#475569; color:#fff;" title="Print Pending Receipt">🖨️ Receipt</button>
+            </div>
+        </div>
+
+        <div class="pending-summary-bar" id="pending-summary-line">Loading pending payments…</div>
+
+        <div class="section-title">🔥 Highly Pending Customers</div>
+        <div class="highly-pending-grid" id="highly-pending-grid"></div>
+        <div id="highly-pending-empty" class="empty-state" style="display:none; padding:16px;">🎉 No pending balances found.</div>
+
+        <div class="section-title" id="pending-table-title">⚠️ All Pending Jobs</div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Service</th>
+                        <th>Pending Amount</th>
+                        <th>Status</th>
+                        <th>Action Matrix</th>
+                    </tr>
+                </thead>
+                <tbody id="pending-table-body"></tbody>
+            </table>
+            <div id="pending-table-empty" class="empty-state" style="display: none;">🎉 No pending payments found for this filter.</div>
+        </div>
+
+        <div class="pending-pagination" id="pending-pagination-controls">
+            <button class="btn-page-nav" id="pending-prev-btn" onclick="pendingPrevPage()">‹ Prev</button>
+            <span class="pending-page-indicator" id="pending-page-indicator">Page 1 of 1</span>
+            <button class="btn-page-nav" id="pending-next-btn" onclick="pendingNextPage()">Next ›</button>
         </div>
     </div>
 
@@ -1427,6 +1629,19 @@
         </div>
         <div id="linked-services-container" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px;"></div>
         <div id="linked-services-empty" class="empty-state" style="display: none;">No services linked yet. Every job will log normally without asking about tool inventory.</div>
+    </div>
+</div>
+
+<!-- Service Presets management modal: edit or delete any preset in one place -->
+<div id="service-presets-modal-overlay" class="modal-overlay" style="display:none;" onmousedown="if(event.target===this) closeServicePresetsModal();">
+    <div class="modal-box">
+        <div class="modal-title">⚡ Manage Service Presets</div>
+        <div class="modal-sub">Edit or remove any saved preset.</div>
+        <div id="service-presets-modal-list" class="tool-modal-list" style="max-height:340px;"></div>
+        <div class="modal-actions">
+            <button type="button" class="btn-modal-skip" style="flex:none; background-color:rgba(74,222,128,0.15); color:var(--accent-green); border:1px dashed var(--accent-green);" onclick="addNewServicePresetPrompt(); renderServicePresetsModalList();">+ Add New</button>
+            <button type="button" class="btn-modal-skip" onclick="closeServicePresetsModal()">Close</button>
+        </div>
     </div>
 </div>
 
@@ -1674,7 +1889,22 @@
     });
 
     let repairRecords = JSON.parse(localStorage.getItem('tabbed_repair_logs')) || [];
-    let customServicePresets = JSON.parse(localStorage.getItem('custom_services_arr')) || [];
+    const DEFAULT_SERVICE_PRESETS = [
+        { label: 'Mi Assistant FRP', charge: 350, expense: 300 },
+        { label: 'Vivo', charge: 2000, expense: 1700 },
+        { label: 'SigmaPlus', charge: 200, expense: 0 },
+        { label: 'Xiaomi QC Mi Account', charge: 500, expense: 250 },
+        { label: 'Xiaomi MTK Mi Account', charge: 500, expense: 250 },
+        { label: 'Xiaomi QC FRP', charge: 350, expense: 250 },
+        { label: 'Xiaomi MTK FRP', charge: 350, expense: 250 },
+        { label: 'Unlocktool Rent', charge: 60, expense: 32 },
+        { label: 'Samsung ADB FRP', charge: 250, expense: 0 }
+    ];
+    const savedServicePresetsRaw = localStorage.getItem('custom_services_arr');
+    let customServicePresets = savedServicePresetsRaw !== null ? JSON.parse(savedServicePresetsRaw) : DEFAULT_SERVICE_PRESETS.slice();
+    if (savedServicePresetsRaw === null) {
+        localStorage.setItem('custom_services_arr', JSON.stringify(customServicePresets));
+    }
     let customCustomerPresets = JSON.parse(localStorage.getItem('custom_customers_arr')) || [];
     let toolInventory = JSON.parse(localStorage.getItem('tool_inventory_arr')) || [];
     
@@ -1972,6 +2202,263 @@
         btnElement.classList.add('active');
     }
 
+    // ---------- Pending Tab ----------
+    let pendingCurrentPage = 1;
+    const PENDING_PAGE_SIZE = 20;
+
+    function getPendingRecordMonthIndex(item) {
+        let mIndex = item.rawMonth;
+        if (mIndex === undefined) {
+            let itemISO = item.isoDateStr || parseDateStringToISO(item.date);
+            if (itemISO) mIndex = parseInt(itemISO.split('-')[1], 10) - 1;
+        }
+        return mIndex;
+    }
+
+    // Returns every non-PAID record matching the current month + customer-name filters,
+    // sorted with the most recent job first.
+    function getFilteredPendingRecords() {
+        const monthSelectEl = document.getElementById('pending-month-select');
+        const monthVal = monthSelectEl ? monthSelectEl.value : 'all';
+        const searchQuery = (document.getElementById('pending-search-input').value || '').trim().toLowerCase();
+
+        let filtered = repairRecords.filter(item => {
+            if (item.status === 'PAID') return false;
+            if (monthVal !== 'all' && getPendingRecordMonthIndex(item) !== parseInt(monthVal, 10)) return false;
+            if (searchQuery && !item.name.toLowerCase().includes(searchQuery)) return false;
+            return true;
+        });
+
+        filtered.sort((a, b) => {
+            const isoA = a.isoDateStr || parseDateStringToISO(a.date) || '';
+            const isoB = b.isoDateStr || parseDateStringToISO(b.date) || '';
+            return isoB.localeCompare(isoA);
+        });
+
+        return filtered;
+    }
+
+    // Groups every pending record for the current month filter (ignores the customer search box,
+    // so the "highly pending" list always reflects everyone) by customer, sorted by amount owed.
+    function getHighlyPendingCustomers() {
+        const monthSelectEl = document.getElementById('pending-month-select');
+        const monthVal = monthSelectEl ? monthSelectEl.value : 'all';
+
+        const grouped = {};
+        repairRecords.forEach(item => {
+            if (item.status === 'PAID') return;
+            if (monthVal !== 'all' && getPendingRecordMonthIndex(item) !== parseInt(monthVal, 10)) return;
+            if (!grouped[item.name]) grouped[item.name] = { name: item.name, jobs: 0, total: 0 };
+            grouped[item.name].jobs++;
+            grouped[item.name].total += item.charge;
+        });
+
+        return Object.values(grouped).sort((a, b) => b.total - a.total);
+    }
+
+    // Called after any action (toggle/partial/edit/delete) so the Pending tab table
+    // stays in sync, without resetting the page number if the user is browsing it.
+    function refreshPendingTabIfLive() {
+        const pendingTabEl = document.getElementById('pending-tab');
+        if (!pendingTabEl) return;
+        renderHighlyPendingCustomers();
+        renderPendingTable();
+    }
+
+    function renderPendingTab() {
+        pendingCurrentPage = 1;
+        renderHighlyPendingCustomers();
+        renderPendingTable();
+    }
+
+    function renderHighlyPendingCustomers() {
+        const activeFilter = (document.getElementById('pending-search-input').value || '').trim().toLowerCase();
+        const list = getHighlyPendingCustomers().slice(0, 10);
+        const grid = document.getElementById('highly-pending-grid');
+        const emptyEl = document.getElementById('highly-pending-empty');
+        grid.innerHTML = '';
+
+        if (list.length === 0) {
+            grid.style.display = 'none';
+            emptyEl.style.display = 'block';
+            return;
+        }
+
+        grid.style.display = 'grid';
+        emptyEl.style.display = 'none';
+
+        list.forEach((c, idx) => {
+            const card = document.createElement('div');
+            const isActive = activeFilter && c.name.toLowerCase() === activeFilter;
+            card.className = `highly-pending-card ${idx === 0 ? 'rank-1' : ''} ${isActive ? 'active-filter' : ''}`;
+            card.onclick = () => filterPendingByCustomer(c.name);
+            card.innerHTML = `
+                <div class="highly-pending-rank">${idx === 0 ? '🔥 #1 Highest' : '#' + (idx + 1)}</div>
+                <div class="highly-pending-name" title="${c.name}">${c.name}</div>
+                <span class="highly-pending-amt">₹${c.total.toLocaleString('en-IN')}</span>
+                <span class="highly-pending-jobs">(${c.jobs} job${c.jobs === 1 ? '' : 's'})</span>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function renderPendingTable() {
+        const allFiltered = getFilteredPendingRecords();
+        const searchQuery = (document.getElementById('pending-search-input').value || '').trim();
+
+        const grandTotal = allFiltered.reduce((sum, item) => sum + item.charge, 0);
+        const customerCount = new Set(allFiltered.map(item => item.name)).size;
+
+        const summaryEl = document.getElementById('pending-summary-line');
+        const titleEl = document.getElementById('pending-table-title');
+        if (searchQuery) {
+            titleEl.innerText = `⚠️ Pending Jobs — "${searchQuery}"`;
+            summaryEl.innerHTML = `<strong>${allFiltered.length}</strong> pending job${allFiltered.length === 1 ? '' : 's'} for this customer — Total owed: <strong>₹${grandTotal.toLocaleString('en-IN')}</strong>`;
+        } else {
+            titleEl.innerText = `⚠️ All Pending Jobs`;
+            summaryEl.innerHTML = `<strong>${allFiltered.length}</strong> pending job${allFiltered.length === 1 ? '' : 's'} across <strong>${customerCount}</strong> customer${customerCount === 1 ? '' : 's'} — Total owed: <strong>₹${grandTotal.toLocaleString('en-IN')}</strong>`;
+        }
+
+        const totalPages = Math.max(1, Math.ceil(allFiltered.length / PENDING_PAGE_SIZE));
+        if (pendingCurrentPage > totalPages) pendingCurrentPage = totalPages;
+        if (pendingCurrentPage < 1) pendingCurrentPage = 1;
+
+        const startIdx = (pendingCurrentPage - 1) * PENDING_PAGE_SIZE;
+        const pageItems = allFiltered.slice(startIdx, startIdx + PENDING_PAGE_SIZE);
+
+        const tbody = document.getElementById('pending-table-body');
+        const emptyEl = document.getElementById('pending-table-empty');
+        tbody.innerHTML = '';
+
+        if (pageItems.length === 0) {
+            emptyEl.style.display = 'block';
+        } else {
+            emptyEl.style.display = 'none';
+            pageItems.forEach((item, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${startIdx + idx + 1}</td>
+                    <td>${item.date || ''}</td>
+                    <td><span class="pending-customer-link" onclick="filterPendingByCustomer('${item.name.replace(/'/g, "\\'")}')" title="Click to view only this customer's pending jobs">${item.name}</span></td>
+                    <td>${item.service || ''}${item.partialPaidAmt > 0 ? ` <small style="color:var(--text-muted);">(Partially Paid ₹${item.partialPaidAmt})</small>` : ''}</td>
+                    <td style="color:var(--accent-gold); font-weight:600;">₹${item.charge.toLocaleString('en-IN')}</td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn-action" onclick="toggleStatus(${item.id})" title="Toggle Payment State">🔄</button>
+                        <button class="btn-inline-partial" onclick="triggerInlinePartialPrompt(${item.id})" title="Log Partial Payment Amount">PARTIAL</button>
+                        <button class="btn-action" onclick="editEntry(${item.id})" title="Edit full entry details" style="color:var(--accent-gold); margin-left:8px;">✏️</button>
+                        <button class="btn-action" onclick="printReceipt(${item.id})" title="Print customer receipt" style="margin-left:8px;">🖨️</button>
+                        <button class="btn-action" onclick="removeEntry(${item.id})" title="Delete entry logs" style="color:var(--accent-red); margin-left:8px;">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('pending-page-indicator').innerText = `Page ${pendingCurrentPage} of ${totalPages}`;
+        document.getElementById('pending-prev-btn').disabled = (pendingCurrentPage <= 1);
+        document.getElementById('pending-next-btn').disabled = (pendingCurrentPage >= totalPages);
+    }
+
+    function pendingNextPage() {
+        pendingCurrentPage++;
+        renderPendingTable();
+    }
+
+    function pendingPrevPage() {
+        pendingCurrentPage--;
+        renderPendingTable();
+    }
+
+    // Click a customer name (from the highly-pending cards or the table) to isolate their jobs.
+    function filterPendingByCustomer(name) {
+        document.getElementById('pending-search-input').value = name;
+        renderPendingTab();
+    }
+
+    function clearPendingFilter() {
+        document.getElementById('pending-search-input').value = '';
+        renderPendingTab();
+    }
+
+    function copyPendingReminderFromTab() {
+        const searchQuery = document.getElementById('pending-search-input').value.trim();
+        if (!searchQuery) {
+            customAlert("Please type a customer name in the Find Customer box first, or click a customer to isolate their pending statement.");
+            return;
+        }
+        const textOutputTemplate = buildPendingReminderText(searchQuery);
+        if (!textOutputTemplate) {
+            customAlert(`No PENDING records found matching "${searchQuery}".`);
+            return;
+        }
+        copyTextToClipboard(textOutputTemplate, document.getElementById('pending-tab-share-btn'));
+    }
+
+    function printPendingReceiptFromTab() {
+        const searchQuery = document.getElementById('pending-search-input').value.trim();
+        if (!searchQuery) {
+            customAlert("Please type a customer name in the Find Customer box first, or click a customer to isolate their pending statement.");
+            return;
+        }
+        const pendingData = collectPendingJobs(searchQuery);
+        if (!pendingData) {
+            customAlert(`No PENDING records found matching "${searchQuery}".`);
+            return;
+        }
+
+        const rowsHTML = pendingData.jobs.map((job, idx) => `
+            <tr>
+                <td>${idx + 1}</td>
+                <td>${job.date}</td>
+                <td>${job.description}</td>
+                <td style="text-align:right;">₹${job.price.toLocaleString('en-IN')}</td>
+            </tr>
+        `).join('');
+
+        const receiptHTML = `
+            <html>
+            <head>
+                <title>Pending Receipt - ${pendingData.officialName}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 30px; color: #111; }
+                    h1 { font-size: 1.4rem; margin-bottom: 0; }
+                    .sub { color: #555; margin-top: 4px; margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                    td, th { padding: 8px 10px; border-bottom: 1px solid #ddd; text-align: left; }
+                    th { color: #555; }
+                    .total-row td { font-weight: bold; border-top: 2px solid #333; text-align:right; }
+                    .footer { margin-top: 30px; text-align: center; color: #555; font-size: 0.9rem; }
+                </style>
+            </head>
+            <body>
+                <h1>FIXWITHYUVI</h1>
+                <div class="sub">Pending Payment Receipt — ${pendingData.officialName}</div>
+                <table>
+                    <thead>
+                        <tr><th>#</th><th>Date</th><th>Job</th><th style="text-align:right;">Pending</th></tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHTML}
+                        <tr class="total-row"><td colspan="3">TOTAL PENDING AMOUNT</td><td>₹${pendingData.totalPending.toLocaleString('en-IN')}</td></tr>
+                    </tbody>
+                </table>
+                <div class="footer">Thanks for choosing FIXWITHYUVI! 🙏</div>
+            </body>
+            </html>
+        `;
+
+        const receiptWindow = window.open('', '_blank', 'width=420,height=600');
+        if (!receiptWindow) {
+            customAlert("Please allow popups for this site to print the receipt.");
+            return;
+        }
+        receiptWindow.document.write(receiptHTML);
+        receiptWindow.document.close();
+        receiptWindow.focus();
+        receiptWindow.print();
+    }
+
     function getLocalDateStringISO(dateObj) {
         const tzOffset = dateObj.getTimezoneOffset() * 60000;
         return (new Date(dateObj.getTime() - tzOffset)).toISOString().split('T')[0];
@@ -2029,17 +2516,99 @@
         const container = document.getElementById('service-presets-holder');
         document.querySelectorAll('.dynamic-service-node').forEach(n => n.remove());
 
-        customServicePresets.forEach(item => {
+        customServicePresets.forEach((item, idx) => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'btn-preset dynamic-service-node';
-            btn.style.borderColor = 'rgba(74, 222, 128, 0.4)';
-            btn.style.color = 'var(--accent-green)';
             btn.innerText = item.label;
             btn.onclick = () => applyPreset(item.label, item.charge, item.expense);
-            
+
             container.insertBefore(btn, container.lastElementChild);
         });
+    }
+
+    function openServicePresetsModal() {
+        renderServicePresetsModalList();
+        document.getElementById('service-presets-modal-overlay').style.display = 'flex';
+    }
+
+    function closeServicePresetsModal() {
+        document.getElementById('service-presets-modal-overlay').style.display = 'none';
+    }
+
+    function renderServicePresetsModalList() {
+        const list = document.getElementById('service-presets-modal-list');
+        list.innerHTML = '';
+
+        if (customServicePresets.length === 0) {
+            list.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:14px 0;">No service presets yet.</div>';
+            return;
+        }
+
+        customServicePresets.forEach((item, idx) => {
+            const row = document.createElement('div');
+            row.className = 'tool-modal-item';
+            row.style.cursor = 'default';
+
+            row.innerHTML = `
+                <div class="tool-modal-item-info">
+                    <span class="tool-modal-item-name">${item.label}</span>
+                    <span class="tool-modal-item-balance">Charge ₹${item.charge} · Expense ₹${item.expense}</span>
+                </div>
+            `;
+
+            const actions = document.createElement('div');
+            actions.style.display = 'flex';
+            actions.style.gap = '6px';
+
+            const editBtn = document.createElement('button');
+            editBtn.type = 'button';
+            editBtn.className = 'btn-preset-edit';
+            editBtn.title = 'Edit preset';
+            editBtn.innerText = '✏️';
+            editBtn.onclick = async () => { await editServicePreset(idx); renderServicePresetsModalList(); };
+
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'btn-preset-del';
+            delBtn.title = 'Delete preset';
+            delBtn.innerText = '🗑️';
+            delBtn.onclick = async () => { await deleteServicePreset(idx); renderServicePresetsModalList(); };
+
+            actions.appendChild(editBtn);
+            actions.appendChild(delBtn);
+            row.appendChild(actions);
+            list.appendChild(row);
+        });
+    }
+
+    async function editServicePreset(idx) {
+        const item = customServicePresets[idx];
+        if (!item) return;
+        const label = await customPrompt("Edit Service Name:", item.label, "✏️ Edit Service Preset");
+        if (!label) return;
+        const chargeStr = await customPrompt("Edit Service Charge Amount (₹):", item.charge, "✏️ Edit Service Preset");
+        if (chargeStr === null) return;
+        const expenseStr = await customPrompt("Edit Cost Expense Value (₹):", item.expense, "✏️ Edit Service Preset");
+        if (expenseStr === null) return;
+
+        customServicePresets[idx] = {
+            label: label.trim(),
+            charge: parseFloat(chargeStr) || 0,
+            expense: parseFloat(expenseStr) || 0
+        };
+        localStorage.setItem('custom_services_arr', JSON.stringify(customServicePresets));
+        renderCustomServicePresets();
+    }
+
+    async function deleteServicePreset(idx) {
+        const item = customServicePresets[idx];
+        if (!item) return;
+        const ok = await customConfirm(`Remove "${item.label}" from Service Presets?`, "🗑️ Remove Service Preset", true);
+        if (!ok) return;
+        customServicePresets.splice(idx, 1);
+        localStorage.setItem('custom_services_arr', JSON.stringify(customServicePresets));
+        renderCustomServicePresets();
     }
 
     async function addNewCustomerPresetPrompt() {
@@ -2663,6 +3232,7 @@
         });
         saveState();
         renderTargetWorkspace();
+        refreshPendingTabIfLive();
     }
 
     async function triggerInlinePartialPrompt(id) {
@@ -2692,6 +3262,7 @@
         }
         saveState();
         renderTargetWorkspace();
+        refreshPendingTabIfLive();
     }
 
     async function editEntry(id) {
@@ -2739,6 +3310,7 @@
 
         saveState();
         renderTargetWorkspace();
+        refreshPendingTabIfLive();
         customAlert("✅ Entry updated successfully.");
     }
 
@@ -2748,6 +3320,7 @@
             repairRecords = repairRecords.filter(item => item.id !== id);
             saveState();
             renderTargetWorkspace();
+            refreshPendingTabIfLive();
         }
     }
 
