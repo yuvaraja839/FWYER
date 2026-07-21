@@ -2000,6 +2000,7 @@
         document.title = currentAppName;
         const heading = document.getElementById('app-name-heading');
         if (heading) heading.innerText = currentAppName;
+        maybeAutoPush();
     }
 
     const DEFAULT_SERVICE_PRESETS = [
@@ -2052,6 +2053,7 @@
     }
     function saveStaffList(list) {
         localStorage.setItem('shop_staff_list', JSON.stringify(list));
+        maybeAutoPush();
     }
     function getActiveSession() {
         return JSON.parse(localStorage.getItem('active_staff_session') || 'null');
@@ -2683,6 +2685,7 @@
 
         customServicePresets.push({ label, charge, expense });
         localStorage.setItem('custom_services_arr', JSON.stringify(customServicePresets));
+        maybeAutoPush();
         renderCustomServicePresets();
     }
 
@@ -2772,6 +2775,7 @@
             expense: parseFloat(expenseStr) || 0
         };
         localStorage.setItem('custom_services_arr', JSON.stringify(customServicePresets));
+        maybeAutoPush();
         renderCustomServicePresets();
     }
 
@@ -2782,6 +2786,7 @@
         if (!ok) return;
         customServicePresets.splice(idx, 1);
         localStorage.setItem('custom_services_arr', JSON.stringify(customServicePresets));
+        maybeAutoPush();
         renderCustomServicePresets();
     }
 
@@ -2791,6 +2796,7 @@
 
         customCustomerPresets.push(clientName.trim());
         localStorage.setItem('custom_customers_arr', JSON.stringify(customCustomerPresets));
+        maybeAutoPush();
         renderCustomCustomerPresets();
     }
 
@@ -3157,14 +3163,19 @@
     function maybeAutoPush() {
         const cfg = getSyncConfig();
         if (!cfg || !cfg.autoPush || !cfg.token || !cfg.repo) return;
-        // Debounce so rapid successive saves don't spam the GitHub API.
-        clearTimeout(__autoPushTimer);
-        __autoPushTimer = setTimeout(() => { pushToCloud(); }, 2500);
+        // A push is already scheduled — let it fire and pick up all changes made since,
+        // instead of pushing the deadline back every time (which was the "slow" feeling).
+        if (__autoPushTimer) return;
+        __autoPushTimer = setTimeout(() => {
+            __autoPushTimer = null;
+            pushToCloud();
+        }, 400);
     }
 
     // ---------- Tool Credit Inventory ----------
     function saveToolInventory() {
         localStorage.setItem('tool_inventory_arr', JSON.stringify(toolInventory));
+        maybeAutoPush();
     }
 
     function renderToolInventory() {
@@ -3256,6 +3267,7 @@
 
     function saveLinkedInventoryServices(list) {
         localStorage.setItem('inventory_linked_services', JSON.stringify(list));
+        maybeAutoPush();
     }
 
     function serviceRequiresInventory(serviceName) {
